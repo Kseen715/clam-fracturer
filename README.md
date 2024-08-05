@@ -8,11 +8,10 @@ NONE
 
 ## Contains
 <div id="auto-sort-start"/>
-  
-- youtube.com - from [[x]](https://github.com/touhidurrr/iplist-youtube?tab=readme-ov-file) [[x]](https://www.gstatic.com/ipranges/goog.json)
-- openai.com
-- chatgpt.com
 
+- chatgpt.com
+- openai.com
+- youtube.com - from [[x]](https://github.com/touhidurrr/iplist-youtube?tab=readme-ov-file) [[x]](https://www.gstatic.com/ipranges/goog.json)
 <div id="auto-sort-end"/>
 
 
