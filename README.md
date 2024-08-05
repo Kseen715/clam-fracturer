@@ -6,7 +6,7 @@
 ## Description
 NONE
 
-## Contains
+## Contains IPs
 <div id="auto-sort-start"/>
 
 - chatgpt.com
