@@ -3,7 +3,9 @@ import json
 import colorama
 import datetime
 
+
 db_file = 'db.csv'
+
 
 def read_csv(filename):
     """_summary_ Read data from csv file
@@ -16,7 +18,8 @@ def read_csv(filename):
     """
     return pd.read_csv(filename)
 
-def write_csv(data, filename):
+
+def write_csv(data, filename, quoting=1):
     """_summary_ Save data to csv file
 
     Args:
@@ -24,7 +27,8 @@ def write_csv(data, filename):
         filename (str): Name of the file to save data
     """
     # "ip","hostname","comment"
-    data.to_csv(filename, index=False, quoting=1)
+    data.to_csv(filename, index=False, quoting=quoting)
+
 
 def write_json(data, filename):
     """_summary_ Save data to json file
@@ -36,6 +40,7 @@ def write_json(data, filename):
     with open(filename, 'w') as f:
         json.dump(data, f, indent=4)
 
+
 def log_happy(msg):
     """_summary_ Log happy message
 
@@ -43,6 +48,7 @@ def log_happy(msg):
         msg (str): Happy message
     """
     print(f'{colorama.Fore.GREEN}{datetime.datetime.now()} [SUCCESS] {msg}{colorama.Style.RESET_ALL}')
+
 
 def log_info(msg):
     """_summary_ Log info message
@@ -52,6 +58,7 @@ def log_info(msg):
     """
     print(f'{colorama.Style.RESET_ALL}{datetime.datetime.now()} [INFO] {msg}{colorama.Style.RESET_ALL}')
 
+
 def log_warning(msg):
     """_summary_ Log warning message
 
@@ -59,6 +66,7 @@ def log_warning(msg):
         msg (str): Warning message
     """
     print(f'{colorama.Fore.YELLOW}{datetime.datetime.now()} [WARNING] {msg}{colorama.Style.RESET_ALL}')
+
 
 def log_error(msg):
     """_summary_ Log error message
