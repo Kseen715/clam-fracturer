@@ -7,10 +7,26 @@
 ## Description
 NONE
 
-## Contains IPs
+## Included IPs
 <div id="auto-sort-start"/>
 
-- chatgpt.com
+- chatgpt.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
+- instagram.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
+- netflix.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - openai.com
-- youtube.com - from [[x]](https://github.com/touhidurrr/iplist-youtube?tab=readme-ov-file) [[x]](https://www.gstatic.com/ipranges/goog.json)
+- x.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
+- youtube.com - from [[x]](https://github.com/touhidurrr/iplist-youtube?tab=readme-ov-file) [[x]](https://www.gstatic.com/ipranges/goog.json) [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
+<div id="auto-sort-end"/>
+
+Not used DBs, but ready to deploy:
+<div id="auto-sort-start"/>
+
+- discord.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
+<div id="auto-sort-end"/>
+
+## Included Services
+<div id="auto-sort-start"/>
+
+- [AmneziaVPN](https://github.com/Kseen715/clam-fracturer/blob/main/out/amnezia_vpn.json)
+- Wireguard (assisted manual config)
 <div id="auto-sort-end"/>
