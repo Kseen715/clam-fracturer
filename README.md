@@ -1,6 +1,7 @@
 # clam-fracturer
 <p align="center">
-  <img src="https://github.com/Kseen715/imgs/blob/main/sakura_kharune.png?raw=true" width="160" height="160"/>
+  <img src="https://github.com/user-attachments/assets/35e545d8-9932-4f91-b8ae-1a67dd3c4cdb" height="155"/>
+  <img src="https://github.com/Kseen715/imgs/blob/main/sakura_kharune.png?raw=true" height="160"/>
 </p>
 
 ## Description
