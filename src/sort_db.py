@@ -63,7 +63,7 @@ def drop_duplicates_in_known(data):
             # remove invalid CIDR
             cidr_data = cidr_data[~(cidr_data.iloc[:, 0].astype(str) == cidr)]
             log_info(f'Dropped {cidr} because it is invalid CIDR notation')
-            
+
 
     not_cidr_data = not_cidr_data[~not_cidr_data.iloc[:, 0].astype(str).isin(cidr_ips)]
 
@@ -83,21 +83,29 @@ def sort_known():
     log_info("sort_known: Starting")
     onlyfiles = [f for f in listdir('in/known') if isfile(join('in/known', f))]
     log_info(f"Found {len(onlyfiles)} files in 'in/known' directory")
-
+    fname = 'fake_name'
     for file in onlyfiles:
         log_info(f"Processing file: {file}")
         data = read_txt_lbl(f'in/known/{file}')
+        # add first line with column name
+        data = [fname] + data
+        # print(data)
+
+        # exit(0)
         data = pd.DataFrame(data, columns=[data[0].split(',')[0]])
         log_info(f"Read {len(data)} rows from {file}")
         
         data = drop_duplicates_in_known(data)
         data = data.sort_values(by=[data.columns[0]])
-        write_csv(data, f'in/known/{file}', quoting=0)
+
+        # drop all line with fname
+        data = data[data[data.columns[0]] != fname]
+        write_txt(data.iloc[:, 0].tolist(), f'in/known/{file}')
         log_happy(f'{file} sorted')
     
     log_info("sort_known: Finished")
 
 
 if __name__ == '__main__':
-    sort_db()
     sort_known()
+    sort_db()

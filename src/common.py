@@ -60,6 +60,18 @@ def write_csv(data, filename, quoting=1):
     data.to_csv(filename, index=False, quoting=quoting)
 
 
+def write_txt(data, filename):
+    """_summary_ Save data to txt file
+
+    Args:
+        data (list): Data to be saved
+        filename (str): Name of the file to save data
+    """
+    with open(filename, 'w') as f:
+        f.write('\n'.join(data))
+        
+
+
 def write_json(data, filename):
     """_summary_ Save data to json file
 

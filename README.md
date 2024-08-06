@@ -16,6 +16,8 @@ NONE
 - openai.com
 - x.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - youtube.com - from [[x]](https://github.com/touhidurrr/iplist-youtube?tab=readme-ov-file) [[x]](https://www.gstatic.com/ipranges/goog.json) [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
+- facebook.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
+- meta - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 <div id="auto-sort-end"/>
 
 Not used DBs, but ready to deploy:
@@ -28,5 +30,6 @@ Not used DBs, but ready to deploy:
 <div id="auto-sort-start"/>
 
 - [AmneziaVPN](https://github.com/Kseen715/clam-fracturer/blob/main/out/amnezia_vpn.json)
-- Wireguard (assisted manual config)
+- [route_add.bat](https://github.com/Kseen715/clam-fracturer/blob/main/out/route_add.bat) - for Keenetic
+- [Wireguard](https://github.com/Kseen715/clam-fracturer/blob/main/out/wireguard_incomplete.conf) - assisted manual config, just copy-paste AllowedIPs to your own WG config
 <div id="auto-sort-end"/>
