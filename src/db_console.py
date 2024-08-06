@@ -3,16 +3,16 @@ import argparse
 
 
 def drop_by_ip(ip):
-    data = read_csv(db_file)
+    data = read_csv(DB_FILE)
     data = [x for x in data if x[0] != ip]
-    write_csv(data, db_file)
+    write_csv(data, DB_FILE)
     log_happy(f"Deleted {ip}")
 
 
 def drop_by_hostname(hostname):
-    data = read_csv(db_file)
+    data = read_csv(DB_FILE)
     data = [x for x in data if x[1] != hostname]
-    write_csv(data, db_file)
+    write_csv(data, DB_FILE)
     log_happy(f"Deleted {hostname}")
 
 
@@ -23,10 +23,10 @@ def insert_entry(ip, hostname, comment):
         return
     if not comment:
         comment = ""
-    data = read_csv(db_file)
+    data = read_csv(DB_FILE)
     new_data = pd.DataFrame([[ip, hostname, comment]], columns=["ipv4", "hostname", "comment"])
     data = pd.concat([data, new_data], ignore_index=True)
-    write_csv(data, db_file)
+    write_csv(data, DB_FILE)
     log_happy(f"Inserted \"{ip}\",\"{hostname}\",\"{comment}\"")
 
 
@@ -39,13 +39,13 @@ def insert_ip_list(filename, hostname, comment):
     if not filename:
         log_warning("Filename is required")
         return
-    data = read_csv(db_file)
+    data = read_csv(DB_FILE)
     new_data = pd.read_csv(filename, header=None, names=["ipv4"])
     new_data["hostname"] = hostname
     new_data["comment"] = comment
     log_info(f"Inserting {len(new_data)} IPs from {filename} with hostname \"{hostname}\" and comment \"{comment}\"")
     data = pd.concat([data, new_data], ignore_index=True)
-    write_csv(data, db_file)
+    write_csv(data, DB_FILE)
     log_happy(f"Inserted IPs from {filename}")
 
 
@@ -62,7 +62,7 @@ def drop(parameters, arguments):
     if 'comment' in parameters and 'comment-part' in parameters:
         log_warning("Cannot use both --comment and --comment-part")
         return
-    data_pick = read_csv(db_file)
+    data_pick = read_csv(DB_FILE)
     if 'ipv4' in parameters:
         data_pick = data_pick[data_pick['ipv4'] == arguments['ipv4']]
     if 'hostname' in parameters:
@@ -71,7 +71,7 @@ def drop(parameters, arguments):
         data_pick = data_pick[data_pick['comment'] == arguments['comment']]
     if 'comment-part' in parameters:
         data_pick = data_pick[data_pick['comment'].fillna('').str.contains(arguments['comment-part'])]
-    data_drop = read_csv(db_file)
+    data_drop = read_csv(DB_FILE)
     log_info(f"Dropping {len(data_pick)} entries")
     ans = None
     if len(data_pick) != 0:
@@ -81,7 +81,7 @@ def drop(parameters, arguments):
         log_info("Aborted")
         return
     data_drop = data_drop[~data_drop.isin(data_pick)].dropna()
-    write_csv(data_drop, db_file)
+    write_csv(data_drop, DB_FILE)
     log_happy(f"Dropped {len(data_pick)} entries")
     
 

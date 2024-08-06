@@ -4,6 +4,7 @@ import os
 from os import listdir
 from os.path import isfile, join
 
+
 def drop_duplicates(data):
     log_info('drop_duplicates: Starting')
     # if there is ip address and CIDR that contains that address, remove solo ip address
@@ -24,14 +25,16 @@ def drop_duplicates(data):
     log_info('drop_duplicates: Finished')
     return data
 
+
 def sort_db():
     log_info('sort_db: Starting')
-    data = read_csv(db_file)
+    data = read_csv(DB_FILE)
     data = data.sort_values(by=['hostname'])
     data = drop_duplicates(data)
-    write_csv(data, db_file)
+    write_csv(data, DB_FILE)
     log_happy('Database sorted')
     log_info('sort_db: Finished')
+
 
 def drop_duplicates_in_known(data):
     log_info("drop_duplicates_in_known: Starting")
@@ -60,6 +63,7 @@ def drop_duplicates_in_known(data):
     
     log_info("drop_duplicates_in_known: Finished")
     return data
+
 
 def sort_known():
     log_info("sort_known: Starting")

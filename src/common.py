@@ -4,7 +4,19 @@ import colorama
 import datetime
 
 
-db_file = 'db.csv'
+DB_FILE = 'db.csv'
+
+
+LOG_LEVELS = {
+    'NONE': 0,
+    'ERROR': 1,
+    'WARNING': 2,
+    'SUCCESS': 3,
+    'INFO': 4,
+}
+
+
+LOG_LEVEL = LOG_LEVELS['INFO']
 
 
 def read_csv(filename):
@@ -47,7 +59,8 @@ def log_happy(msg):
     Args:
         msg (str): Happy message
     """
-    print(f'{colorama.Fore.GREEN}{datetime.datetime.now()} [SUCCESS] {msg}{colorama.Style.RESET_ALL}')
+    if LOG_LEVEL >= LOG_LEVELS['SUCCESS']:
+        print(f'{colorama.Fore.GREEN}{datetime.datetime.now()} [SUCCESS] {msg}{colorama.Style.RESET_ALL}')
 
 
 def log_info(msg):
@@ -56,7 +69,8 @@ def log_info(msg):
     Args:
         msg (str): Info message
     """
-    print(f'{colorama.Style.RESET_ALL}{datetime.datetime.now()} [INFO] {msg}{colorama.Style.RESET_ALL}')
+    if LOG_LEVEL >= LOG_LEVELS['INFO']:
+        print(f'{colorama.Style.RESET_ALL}{datetime.datetime.now()} [INFO] {msg}{colorama.Style.RESET_ALL}')
 
 
 def log_warning(msg):
@@ -65,7 +79,8 @@ def log_warning(msg):
     Args:
         msg (str): Warning message
     """
-    print(f'{colorama.Fore.YELLOW}{datetime.datetime.now()} [WARNING] {msg}{colorama.Style.RESET_ALL}')
+    if LOG_LEVEL >= LOG_LEVELS['WARNING']:
+        print(f'{colorama.Fore.YELLOW}{datetime.datetime.now()} [WARNING] {msg}{colorama.Style.RESET_ALL}')
 
 
 def log_error(msg):
@@ -74,4 +89,5 @@ def log_error(msg):
     Args:
         msg (str): Error message
     """
-    print(f'{colorama.Fore.RED}{datetime.datetime.now()} [ERROR] {msg}{colorama.Style.RESET_ALL}')
+    if LOG_LEVEL >= LOG_LEVELS['ERROR']:
+        print(f'{colorama.Fore.RED}{datetime.datetime.now()} [ERROR] {msg}{colorama.Style.RESET_ALL}')

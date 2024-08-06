@@ -2,9 +2,10 @@ import ipaddress
 from common import *
 
 def maskt2ipv4():
+    log_info('maskt2ipv4: Starting')
     cidr_count = 0
     converted_ip_count = 0
-    data = read_csv(db_file)
+    data = read_csv(DB_FILE)
     # if ipv4 contains / then it is a masked ip range
     masked = data[data['ipv4'].str.contains('/')]
     # convert masked ip range to list of ip addresses
@@ -24,8 +25,10 @@ def maskt2ipv4():
     data = data[~data['ipv4'].str.contains('/')]
     # append ip list to data
     data = pd.concat([data, pd.DataFrame(ip_list)], ignore_index=True)
-    write_csv(data, db_file)
+    write_csv(data, DB_FILE)
     log_happy('Converted {} masked IP ranges to {} IP addresses'.format(cidr_count, converted_ip_count))
+    log_info('maskt2ipv4: Finished')
+
 
 if __name__ == '__main__':
     maskt2ipv4()
