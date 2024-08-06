@@ -72,10 +72,12 @@ def sort_known():
 
     for file in onlyfiles:
         log_info(f"Processing file: {file}")
-        data = read_csv(f'in/known/{file}')
+        data = read_txt_lbl(f'in/known/{file}')
+        data = pd.DataFrame(data, columns=[data[0].split(',')[0]])
         log_info(f"Read {len(data)} rows from {file}")
         
         data = drop_duplicates_in_known(data)
+        data = data.sort_values(by=[data.columns[0]])
         write_csv(data, f'in/known/{file}', quoting=0)
         log_happy(f'{file} sorted')
     

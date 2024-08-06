@@ -19,17 +19,35 @@ LOG_LEVELS = {
 LOG_LEVEL = LOG_LEVELS['INFO']
 
 
-def read_csv(filename):
+def read_csv(filename, include_first_line=False):
     """_summary_ Read data from csv file
+
+    Args:
+        filename (str): Name of the file to read data
+        include_first_line (bool): Whether to include the first line as data
+
+    Returns:
+        pd.DataFrame: Data read from csv file
+    """
+    if include_first_line:
+        return pd.read_csv(filename, header=0)
+    return pd.read_csv(filename)
+
+
+def read_txt_lbl(filename):
+    """_summary_ Read data from txt file
 
     Args:
         filename (str): Name of the file to read data
 
     Returns:
-        pd.DataFrame: Data read from csv file
+        list: Data read from txt file
     """
-    return pd.read_csv(filename)
-
+    # delete \n and empty lines
+    with open(filename, 'r') as f:
+        data = f.readlines()
+    data = [x.strip() for x in data if x.strip()]
+    return data
 
 def write_csv(data, filename, quoting=1):
     """_summary_ Save data to csv file
