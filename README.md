@@ -10,7 +10,7 @@ NONE
 ## Contains IPs
 <div id="auto-sort-start"/>
 
-- chatgpt.com
 - openai.com
+- chatgpt.com
 - youtube.com - from [[x]](https://github.com/touhidurrr/iplist-youtube?tab=readme-ov-file) [[x]](https://www.gstatic.com/ipranges/goog.json)
 <div id="auto-sort-end"/>
