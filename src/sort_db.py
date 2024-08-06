@@ -30,6 +30,7 @@ def sort_db():
     log_info('sort_db: Starting')
     data = read_csv(DB_FILE)
     data = data.sort_values(by=['hostname', 'ipv4', 'comment'])
+    data = data.drop_duplicates(subset=['ipv4'])
     data = drop_duplicates(data)
     write_csv(data, DB_FILE)
     log_happy('Database sorted')
