@@ -43,14 +43,17 @@ def drop_duplicates_in_known(data):
 
     cidr_data = data[data.iloc[:, 0].astype(str).str.contains('/')]
     not_cidr_data = data[~data.iloc[:, 0].astype(str).str.contains('/')]
-    
+
     log_info(f"Initial CIDR data count: {len(cidr_data)}")
     log_info(f"Initial non-CIDR data count: {len(not_cidr_data)}")
 
     cidr_ips = set()
     for cidr in cidr_data.iloc[:, 0]:
-        ip_network = ipaddress.ip_network(cidr)
-        cidr_ips.update(str(ip) for ip in ip_network.hosts())
+        try:
+            ip_network = ipaddress.ip_network(cidr, strict=False)
+            cidr_ips.update(str(ip) for ip in ip_network.hosts())
+        except ValueError as e:
+            log_warning(f"Invalid CIDR notation {cidr}: {e}")
 
     not_cidr_data = not_cidr_data[~not_cidr_data.iloc[:, 0].astype(str).isin(cidr_ips)]
 
@@ -61,7 +64,7 @@ def drop_duplicates_in_known(data):
     data = pd.concat([not_cidr_data, cidr_data], ignore_index=True)
     if len(original_data) != len(data):
         log_happy(f"Dropped {len(original_data) - len(data)} duplicate IP addresses")
-    
+
     log_info("drop_duplicates_in_known: Finished")
     return data
 
