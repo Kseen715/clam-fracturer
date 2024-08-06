@@ -12,13 +12,19 @@ def drop_duplicates(data):
     
     cidr_data = data[data['ipv4'].str.contains('/')]
     not_cidr_data = data[~data['ipv4'].str.contains('/')]
-
     for index, row in cidr_data.iterrows():
-        ip = ipaddress.ip_network(row['ipv4'])
-        for i in ip.hosts():
-            if str(i) in not_cidr_data['ipv4'].values:
-                not_cidr_data = not_cidr_data[~(not_cidr_data['ipv4'].astype(str) == str(i))]
-                log_info(f'Dropped {str(i)} because it is included in {row["ipv4"]}')
+        try:
+            ip = ipaddress.ip_network(row['ipv4'], strict=False)
+            for i in ip.hosts():
+                if str(i) in not_cidr_data['ipv4'].values:
+                    not_cidr_data = not_cidr_data[~(not_cidr_data['ipv4'].astype(str) == str(i))]
+                    log_info(f'Dropped {str(i)} because it is included in {row["ipv4"]}')
+        except ValueError as e:
+            log_warning(f"Invalid CIDR notation {row['ipv4']}: {e}")
+            # remove invalid CIDR
+            cidr_data = cidr_data[~(cidr_data['ipv4'] == row['ipv4'])]
+            log_info(f'Dropped {row["ipv4"]} because it is invalid CIDR notation')
+    
     data = pd.concat([not_cidr_data, cidr_data], ignore_index=True)
     if len(original_data) != len(data):
         log_happy(f"Dropped {len(original_data) - len(data)} duplicate IP addresses")
@@ -54,6 +60,10 @@ def drop_duplicates_in_known(data):
             cidr_ips.update(str(ip) for ip in ip_network.hosts())
         except ValueError as e:
             log_warning(f"Invalid CIDR notation {cidr}: {e}")
+            # remove invalid CIDR
+            cidr_data = cidr_data[~(cidr_data.iloc[:, 0].astype(str) == cidr)]
+            log_info(f'Dropped {cidr} because it is invalid CIDR notation')
+            
 
     not_cidr_data = not_cidr_data[~not_cidr_data.iloc[:, 0].astype(str).isin(cidr_ips)]
 
