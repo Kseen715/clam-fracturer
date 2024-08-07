@@ -25,6 +25,7 @@ Not used DBs, but ready to deploy:
 
 - discord.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - microsoft - from [[x]](https://networksdb.io/ip-addresses-of/microsoft-corp)
+- nhentai.net - from [[x]](https://networksdb.io/domain-to-ips/nhentai.net)
 <div id="auto-sort-end"/>
 
 ## Included Services
