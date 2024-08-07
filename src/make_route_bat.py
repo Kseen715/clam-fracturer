@@ -30,6 +30,7 @@ if ipv4 not contain / then it is a single ip address, just add it to route
 
 def make_route_bat():
     log_info('make_route_bat: Starting')
+
     data = read_csv(DB_FILE)
     # if ipv4 contains / then it is a masked ip range
     masked = data[data['ipv4'].str.contains('/')]

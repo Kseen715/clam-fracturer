@@ -1,11 +1,20 @@
 from common import *
 import re
+import os
 # catch <div id="auto-sort-start"/> and <div id="auto-sort-end"/> in README.md
 # sort the lines between them alphabetically
 
 
 def sort_readme():
     log_info('sort_readme: Starting')
+    if os.path.exists('./hashes/README.md.hash'):
+        if not check_hash_binary(hash_file('README.md'), './hashes/README.md.hash'):
+            log_warning('README.md has been modified')
+        else:
+            log_info('README.md has not been modified')
+            return
+    else:
+        log_warning('No hash file found for README.md')
     
     with open('README.md', 'r') as f:
         readme = f.readlines()
@@ -32,6 +41,7 @@ def sort_readme():
         f.writelines(sorted_readme)
     
     log_happy('README.md sorted')
+    save_hash_binary(hash_file('README.md'), './hashes/README.md.hash')
     log_info('sort_readme: Finished')
 
 

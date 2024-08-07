@@ -14,7 +14,7 @@ NONE
 - facebook.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - instagram.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - meta - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
-- netflix.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
+- netflix - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - openai.com
 - x.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - youtube.com - from [[x]](https://github.com/touhidurrr/iplist-youtube?tab=readme-ov-file) [[x]](https://www.gstatic.com/ipranges/goog.json) [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)

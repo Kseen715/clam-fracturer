@@ -12,6 +12,7 @@ from common import *
 
 def make_wireguard():
     log_info('make_wireguard: Starting')
+
     data = read_csv(DB_FILE)
     file_str = ""
     # add header

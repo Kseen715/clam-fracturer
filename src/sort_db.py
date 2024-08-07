@@ -34,13 +34,24 @@ def drop_duplicates(data):
 
 def sort_db():
     log_info('sort_db: Starting')
+    # save_hash_binary(hash_file(DB_FILE), './hashes/' + DB_FILE + '.hash')
+    if os.path.exists('./hashes/' + DB_FILE + '.hash'):
+        if not check_hash_binary(hash_file(DB_FILE), './hashes/' + DB_FILE + '.hash'):
+            log_warning('Database file has been modified')
+        else:
+            log_info('Database file has not been modified')
+            return
+    else:
+        log_warning('No hash file found for database')
     data = read_csv(DB_FILE)
     data = data.sort_values(by=['hostname', 'ipv4', 'comment'])
     data = data.drop_duplicates(subset=['ipv4'])
     data = drop_duplicates(data)
     write_csv(data, DB_FILE)
     log_happy('Database sorted')
+    save_hash_binary(hash_file(DB_FILE), './hashes/' + DB_FILE)
     log_info('sort_db: Finished')
+    
 
 
 def drop_duplicates_in_known(data):
@@ -52,24 +63,27 @@ def drop_duplicates_in_known(data):
 
     log_info(f"Initial CIDR data count: {len(cidr_data)}")
     log_info(f"Initial non-CIDR data count: {len(not_cidr_data)}")
+    if len(not_cidr_data) == 0:
+        log_info("No non-CIDR data found")
+    else:
+        cidr_ips = set()
+        for cidr in cidr_data.iloc[:, 0]:
+            try:
+                ip_network = ipaddress.ip_network(cidr, strict=False)
+                cidr_ips.update(str(ip) for ip in ip_network.hosts())
+            except ValueError as e:
+                log_warning(f"Invalid CIDR notation {cidr}: {e}")
+                # remove invalid CIDR
+                cidr_data = cidr_data[~(cidr_data.iloc[:, 0].astype(str) == cidr)]
+                log_info(f'Dropped {cidr} because it is invalid CIDR notation')
 
-    cidr_ips = set()
-    for cidr in cidr_data.iloc[:, 0]:
-        try:
-            ip_network = ipaddress.ip_network(cidr, strict=False)
-            cidr_ips.update(str(ip) for ip in ip_network.hosts())
-        except ValueError as e:
-            log_warning(f"Invalid CIDR notation {cidr}: {e}")
-            # remove invalid CIDR
-            cidr_data = cidr_data[~(cidr_data.iloc[:, 0].astype(str) == cidr)]
-            log_info(f'Dropped {cidr} because it is invalid CIDR notation')
 
+        not_cidr_data = not_cidr_data[~not_cidr_data.iloc[:, 0].astype(str).isin(cidr_ips)]
 
-    not_cidr_data = not_cidr_data[~not_cidr_data.iloc[:, 0].astype(str).isin(cidr_ips)]
+        dropped_ips = set(original_data.iloc[:, 0].astype(str)) - set(not_cidr_data.iloc[:, 0].astype(str)) - set(cidr_data.iloc[:, 0].astype(str))
+        for ip in dropped_ips:
+            log_info(f'Dropped {ip} because it is included in a CIDR range')
 
-    dropped_ips = set(original_data.iloc[:, 0].astype(str)) - set(not_cidr_data.iloc[:, 0].astype(str)) - set(cidr_data.iloc[:, 0].astype(str))
-    for ip in dropped_ips:
-        log_info(f'Dropped {ip} because it is included in a CIDR range')
 
     data = pd.concat([not_cidr_data, cidr_data], ignore_index=True)
     if len(original_data) != len(data):
@@ -86,9 +100,18 @@ def sort_known():
     fname = 'fake_name'
     for file in onlyfiles:
         log_info(f"Processing file: {file}")
+        if os.path.exists(f'./hashes/{file}.hash'):
+            if not check_hash_binary(hash_file(f'in/known/{file}'), f'./hashes/{file}.hash'):
+                log_warning(f'{file} has been modified')
+            else:
+                log_info(f'{file} has not been modified')
+                continue
+        else:
+            log_warning(f'No hash file found for {file}')
+
         data = read_txt_lbl(f'in/known/{file}')
         # add first line with column name
-        data = [fname] + data
+        # data = [fname] + data
         # print(data)
 
         # exit(0)
@@ -101,6 +124,7 @@ def sort_known():
         # drop all line with fname
         data = data[data[data.columns[0]] != fname]
         write_txt(data.iloc[:, 0].tolist(), f'in/known/{file}')
+        save_hash_binary(hash_file(f'in/known/{file}'), f'./hashes/{file}.hash')
         log_happy(f'{file} sorted')
     
     log_info("sort_known: Finished")

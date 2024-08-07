@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import colorama
 import datetime
+from hashlib import sha256
 
 
 DB_FILE = 'db.csv'
@@ -121,3 +122,65 @@ def log_error(msg):
     """
     if LOG_LEVEL >= LOG_LEVELS['ERROR']:
         print(f'{colorama.Fore.RED}{datetime.datetime.now()} [ERROR] {msg}{colorama.Style.RESET_ALL}')
+
+
+def hash_file(filename):
+    """Hash file
+
+    Args:
+        filename (str): Name of the file to hash
+
+    Returns:
+        bytes: Hash of the file in bytes
+    """
+    with open(filename, 'rb') as f:
+        return sha256(f.read()).digest()
+    
+
+def hash_str(string):
+    """_summary_ Hash string
+
+    Args:
+        string (str): String to hash
+
+    Returns:
+        str: Hash of the string
+    """
+    return sha256(string.encode()).digest()
+
+
+def save_hash_binary(new_hash_bytes, new_hash_filename):
+    """_summary_ Save hash of binary data to file
+
+    Args:
+        data (bytes): Binary data to hash
+        filename (str): Name of the file to save hash
+    """
+    with open(new_hash_filename, 'wb') as f:
+        f.write(new_hash_bytes)
+    log_info(f'Saved hash to {new_hash_filename}')
+
+    
+def read_file_binary(filename):
+    """_summary_ Read binary data from file
+
+    Args:
+        filename (str): Name of the file to read data
+
+    Returns:
+        bytes: Binary data read from file
+    """
+    with open(filename, 'rb') as f:
+        return f.read()
+    
+def check_hash_binary(new_hash_bytes, old_hash_filename):
+    """_summary_ Check hash of binary data
+
+    Args:
+        data (bytes): Binary data to hash
+        filename (str): Name of the file to check hash
+
+    Returns:
+        bool: Whether the hash matches
+    """
+    return new_hash_bytes == read_file_binary(old_hash_filename)

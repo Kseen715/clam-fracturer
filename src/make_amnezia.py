@@ -1,8 +1,8 @@
 from common import *
 
-
 def make_amnezia():
     log_info('make_amnezia: Starting')
+        
     data = read_csv(DB_FILE)
     # use ipv4 as hostname
     data['hostname'] = data['ipv4']
