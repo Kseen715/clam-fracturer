@@ -49,7 +49,7 @@ def sort_db():
     data = drop_duplicates(data)
     write_csv(data, DB_FILE)
     log_happy('Database sorted')
-    save_hash_binary(hash_file(DB_FILE), './hashes/' + DB_FILE)
+    save_hash_binary(hash_file(DB_FILE), './hashes/' + DB_FILE + '.hash')
     log_info('sort_db: Finished')
     
 

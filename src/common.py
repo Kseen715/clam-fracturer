@@ -2,7 +2,7 @@ import pandas as pd
 import json
 import colorama
 import datetime
-from hashlib import sha256
+# from hashlib import sha256
 
 
 DB_FILE = 'db.csv'
@@ -124,6 +124,29 @@ def log_error(msg):
         print(f'{colorama.Fore.RED}{datetime.datetime.now()} [ERROR] {msg}{colorama.Style.RESET_ALL}')
 
 
+class FastHash:
+    """Manual hashing class, limited to 512 bits (64 bytes)"""
+    
+    def __init__(self):
+        self._hash_value = [0] * 64  # Initialize a list of 64 zeros
+        self._data = bytearray()
+
+    def update(self, data):
+        """Update the hash with new data"""
+        self._data.extend(data)
+        for i, byte in enumerate(data):
+            self._hash_value[i % 64] = (self._hash_value[i % 64] + byte) % 256  # Simple hash update
+
+    def digest(self):
+        """Return the digest of the data passed to the update() method so far"""
+        return bytes(self._hash_value)
+
+    def hexdigest(self):
+        """Return the hexadecimal digest of the data passed to the update() method so far"""
+        return ''.join(f'{byte:02x}' for byte in self._hash_value)
+
+
+
 def hash_file(filename):
     """Hash file
 
@@ -133,20 +156,24 @@ def hash_file(filename):
     Returns:
         bytes: Hash of the file in bytes
     """
+    hasher = FastHash()
     with open(filename, 'rb') as f:
-        return sha256(f.read()).digest()
+        hasher.update(f.read())
+    return hasher.digest()
     
 
 def hash_str(string):
-    """_summary_ Hash string
+    """Hash string
 
     Args:
         string (str): String to hash
 
     Returns:
-        str: Hash of the string
+        bytes: Hash of the string
     """
-    return sha256(string.encode()).digest()
+    hasher = FastHash()
+    hasher.update(string.encode())
+    return hasher.digest()
 
 
 def save_hash_binary(new_hash_bytes, new_hash_filename):
