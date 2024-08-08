@@ -157,7 +157,7 @@ def hash_file(filename):
         bytes: Hash of the file in bytes
     """
     hasher = FastHash()
-    with open(filename, 'rb') as f:
+    with open(filename, 'rb', encoding='utf-8') as f:
         hasher.update(f.read())
     return hasher.digest()
     
@@ -183,7 +183,7 @@ def save_hash_binary(new_hash_bytes, new_hash_filename):
         data (bytes): Binary data to hash
         filename (str): Name of the file to save hash
     """
-    with open(new_hash_filename, 'wb') as f:
+    with open(new_hash_filename, 'wb', encoding='utf-8') as f:
         f.write(new_hash_bytes)
     log_info(f'Saved hash to {new_hash_filename}')
 
@@ -197,7 +197,7 @@ def read_file_binary(filename):
     Returns:
         bytes: Binary data read from file
     """
-    with open(filename, 'rb') as f:
+    with open(filename, 'rb', encoding='utf-8') as f:
         return f.read()
     
 def check_hash_binary(new_hash_bytes, old_hash_filename):
