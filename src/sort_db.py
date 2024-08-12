@@ -3,6 +3,7 @@ import ipaddress
 import os
 from os import listdir
 from os.path import isfile, join
+import pandas as pd
 
 
 def drop_duplicates(data):
@@ -14,11 +15,9 @@ def drop_duplicates(data):
     not_cidr_data = data[~data['ipv4'].str.contains('/')]
     for index, row in cidr_data.iterrows():
         try:
-            ip = ipaddress.ip_network(row['ipv4'], strict=False)
-            for i in ip.hosts():
-                if str(i) in not_cidr_data['ipv4'].values:
-                    not_cidr_data = not_cidr_data[~(not_cidr_data['ipv4'].astype(str) == str(i))]
-                    log_info(f'Dropped {str(i)} because it is included in {row["ipv4"]}')
+            ip_net = ipaddress.ip_network(row['ipv4'], strict=False)
+            not_cidr_data.loc[:, 'ipv4'] = not_cidr_data['ipv4'].apply(lambda x: None if ipaddress.ip_address(x) in ip_net else x)
+            not_cidr_data = not_cidr_data.dropna(subset=['ipv4'])
         except ValueError as e:
             log_warning(f"Invalid CIDR notation {row['ipv4']}: {e}")
             # remove invalid CIDR
@@ -66,24 +65,16 @@ def drop_duplicates_in_known(data):
     if len(not_cidr_data) == 0:
         log_info("No non-CIDR data found")
     else:
-        cidr_ips = set()
         for cidr in cidr_data.iloc[:, 0]:
             try:
                 ip_network = ipaddress.ip_network(cidr, strict=False)
-                cidr_ips.update(str(ip) for ip in ip_network.hosts())
+                not_cidr_data['ipv4'] = not_cidr_data.iloc[:, 0].apply(lambda x: None if ipaddress.ip_address(x) in ip_network else x)
+                not_cidr_data = not_cidr_data.dropna(subset=[not_cidr_data.columns[0]])
             except ValueError as e:
                 log_warning(f"Invalid CIDR notation {cidr}: {e}")
                 # remove invalid CIDR
                 cidr_data = cidr_data[~(cidr_data.iloc[:, 0].astype(str) == cidr)]
                 log_info(f'Dropped {cidr} because it is invalid CIDR notation')
-
-
-        not_cidr_data = not_cidr_data[~not_cidr_data.iloc[:, 0].astype(str).isin(cidr_ips)]
-
-        dropped_ips = set(original_data.iloc[:, 0].astype(str)) - set(not_cidr_data.iloc[:, 0].astype(str)) - set(cidr_data.iloc[:, 0].astype(str))
-        for ip in dropped_ips:
-            log_info(f'Dropped {ip} because it is included in a CIDR range')
-
 
     data = pd.concat([not_cidr_data, cidr_data], ignore_index=True)
     if len(original_data) != len(data):
