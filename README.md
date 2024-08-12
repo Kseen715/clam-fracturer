@@ -7,6 +7,10 @@
 ## Description
 NONE
 
+`Availability > performance`
+
+We include all proxies of listed sites to raise chance of correct routing.
+
 ## Included IPs
 <div id="auto-sort-start"/>
 
@@ -26,6 +30,9 @@ Not used DBs, but ready to deploy:
 - discord.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - microsoft - from [[x]](https://networksdb.io/ip-addresses-of/microsoft-corp)
 - nhentai.net - from [[x]](https://networksdb.io/domain-to-ips/nhentai.net)
+- rutracker.org - from [[x]](https://networksdb.io/)
+- xhamster.com - from [[x]](https://networksdb.io/)
+- xvideos.com - from [[x]](https://networksdb.io/)
 <div id="auto-sort-end"/>
 
 ## Included Services
