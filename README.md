@@ -32,7 +32,7 @@ Not used DBs, but ready to deploy:
 <div id="auto-sort-start"/>
 
 - [AmneziaVPN](https://github.com/Kseen715/clam-fracturer/blob/main/out/amnezia_vpn.json)
+- [OpenVPN](https://github.com/Kseen715/clam-fracturer/blob/main/out/openvpn_route.ovpn) - assisted manual config, just copy-paste routes to your own ovpn config, after line `client`
 - [Wireguard](https://github.com/Kseen715/clam-fracturer/blob/main/out/wireguard_incomplete.conf) - assisted manual config, just copy-paste AllowedIPs to your own WG config
 - [route_add.bat](https://github.com/Kseen715/clam-fracturer/blob/main/out/route_add.bat) - for Keenetic
-- [OpenVPN](https://github.com/Kseen715/clam-fracturer/blob/main/out/openvpn_route.ovpn) - assisted manual config, just copy-paste routes to your own ovpn config, after line `client`
 <div id="auto-sort-end"/>
