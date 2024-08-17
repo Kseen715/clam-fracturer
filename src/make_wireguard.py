@@ -9,7 +9,7 @@ from common import *
 """
 
 # AllowedIPs = 195.201.201.32/32, 192.173.68.0/24, 54.144.0.0/12, 54.192.0.0/12
-
+# TODO: android client can process ~256 peers, so we need to compact the list via some smart shit
 def make_wireguard():
     log_info('make_wireguard: Starting')
 

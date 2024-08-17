@@ -45,6 +45,17 @@ def sort_db():
     data = read_csv(DB_FILE)
     data = data.sort_values(by=['hostname', 'ipv4', 'comment'])
     data = data.drop_duplicates(subset=['ipv4'])
+    # check if str contains /, if it does, it is CIDR, check if it valid cidr
+# if not, remove it
+    for index, row in data.iterrows():
+        if '/' in row['ipv4']:
+            try:
+                if not is_cidr_valid(row['ipv4']):
+                    log_warning(f"Invalid CIDR notation {row['ipv4']}")
+                    data = data[~(data['ipv4'] == row['ipv4'])]
+                    log_info(f'Dropped {row["ipv4"]} because it is invalid CIDR notation')
+            except ValueError as e:
+                log_error(f"Invalid CIDR notation {row['ipv4']}: {e}")
     data = drop_duplicates(data)
     write_csv(data, DB_FILE)
     log_happy('Database sorted')
@@ -66,13 +77,8 @@ def drop_duplicates_in_known(data):
         log_info("No non-CIDR data found")
     else:
         for cidr in cidr_data.iloc[:, 0]:
-            try:
-                ip_network = ipaddress.ip_network(cidr, strict=False)
-                not_cidr_data['ipv4'] = not_cidr_data.iloc[:, 0].apply(lambda x: None if ipaddress.ip_address(x) in ip_network else x)
-                not_cidr_data = not_cidr_data.dropna(subset=[not_cidr_data.columns[0]])
-            except ValueError as e:
-                log_warning(f"Invalid CIDR notation {cidr}: {e}")
-                # remove invalid CIDR
+            if not is_cidr_valid(cidr):
+                log_warning(f"Invalid CIDR notation {cidr}")
                 cidr_data = cidr_data[~(cidr_data.iloc[:, 0].astype(str) == cidr)]
                 log_info(f'Dropped {cidr} because it is invalid CIDR notation')
 
@@ -109,6 +115,14 @@ def sort_known():
         data = pd.DataFrame(data, columns=[data[0].split(',')[0]])
         log_info(f"Read {len(data)} rows from {file}")
         
+        for index, row in data.iterrows():
+            if '/' in row.iloc[0]:
+                try:
+                    ipaddress.ip_network(row.iloc[0], strict=False)
+                except ValueError as e:
+                    log_warning(f"Invalid CIDR notation {row[0]}: {e}")
+                    data = data[~(data[data.columns[0]] == row[0])]
+                    log_info(f'Dropped {row[0]} because it is invalid CIDR notation')
         data = drop_duplicates_in_known(data)
         data = data.sort_values(by=[data.columns[0]])
 

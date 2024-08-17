@@ -1,8 +1,8 @@
 import pandas as pd
-import json
-import colorama
-import datetime
+import datetime, os, json
 # from hashlib import sha256
+
+import colorama
 
 
 DB_FILE = 'db.csv'
@@ -183,6 +183,9 @@ def save_hash_binary(new_hash_bytes, new_hash_filename):
         data (bytes): Binary data to hash
         filename (str): Name of the file to save hash
     """
+    # if folder for hashes does not exist, create it
+    if not os.path.exists(os.path.dirname(new_hash_filename)):
+        os.makedirs(os.path.dirname(new_hash_filename))
     with open(new_hash_filename, 'wb') as f:
         f.write(new_hash_bytes)
     log_info(f'Saved hash to {new_hash_filename}')
@@ -211,3 +214,61 @@ def check_hash_binary(new_hash_bytes, old_hash_filename):
         bool: Whether the hash matches
     """
     return new_hash_bytes == read_file_binary(old_hash_filename)
+
+
+def is_cidr_valid(cidr: str):
+    """_summary_ Check if CIDR is valid
+
+    Args:
+        cidr (str): CIDR to check
+
+    Returns:
+        bool: Whether the CIDR is valid
+    """
+    if '.' in cidr:
+        if '/' not in cidr:
+            return False
+        ip, mask = cidr.split('/')
+        mask = int(mask) # how much bits can be non-zero, from start
+        ip = [int(x) for x in ip.split('.')]
+
+        if len(ip) != 4:
+            return False
+        # check if all bits after mask are zero
+        _str_ip = ''.join(f'{x:08b}' for x in ip)
+        # drop first mask bits
+        str_ip = _str_ip[mask:]
+        # check if there are any non-zero bits
+        for bit in str_ip:
+            if bit != '0':
+                log_info(f'{str_ip}')
+                log_info(f'{_str_ip}')
+                log_info(f'{'1' * mask}' + '0' * (32 - mask))
+                return False
+        return True
+    elif ':' in cidr:
+        if '/' not in cidr:
+            return False
+        ip, mask = cidr.split('/')
+        mask = int(mask)
+        ip = ip.split(':')
+        # remove empty strings
+        ip = [x for x in ip if x]
+
+        if len(ip) != 8:
+            # expand with zeros
+            ip = [x if x else '0000' for x in ip]
+        ip = [int(x, 16) for x in ip]
+        _str_ip = ''.join(f'{x:016b}' for x in ip)
+        # drop first mask bits
+        str_ip = _str_ip[mask:]
+        # check if there are any non-zero bits
+        for bit in str_ip:
+            if bit != '0':
+                log_info(f'{str_ip}')
+                log_info(f'{_str_ip}')
+                log_info(f'{'1' * mask}' + '0' * (128 - mask))
+                return False
+        return True
+    
+    return False
