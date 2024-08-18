@@ -2,8 +2,12 @@
 name: CI
 
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   fetch-commit-message:
@@ -11,7 +15,7 @@ jobs:
     outputs:
       commit_message: ${{ steps.get_commit_message.outputs.message }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: "Fetch commit message"
       id: get_commit_message
       run: echo "message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
@@ -51,9 +55,9 @@ jobs:
     needs: check-no-ci
     if: needs.check-no-ci.outputs.no_ci == 'false'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: "Set up Python"
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - name: "Install dependencies"
