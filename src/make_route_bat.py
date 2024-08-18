@@ -24,7 +24,7 @@ route ADD 157.240.251.9 MASK 255.255.255.255 0.0.0.0
 route ADD 157.240.251.5 MASK 255.255.255.255 0.0.0.0
 route ADD 157.240.238.37 MASK 255.255.255.255 0.0.0.0
 
-if ipv4 contains / then it is a masked ip range, create correct mask fot that
+if ipv4 contains / then it is a masked ip range, create correct mask for that
 if ipv4 not contain / then it is a single ip address, just add it to route
 """
 
