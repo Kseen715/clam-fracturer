@@ -73,11 +73,11 @@ def drop(parameters, arguments):
         data_pick = data_pick[data_pick['comment'].fillna('').str.contains(arguments['comment-part'])]
     data_drop = read_csv(DB_FILE)
     Logger.info(f"Dropping {len(data_pick)} entries")
-    ans = None
+    answer = None
     if len(data_pick) != 0:
-        ans = input(f"{colorama.Fore.RED}ARE YOU SURE "\
+        answer = input(f"{colorama.Fore.RED}ARE YOU SURE "\
             + f"you want to DROP {len(data_pick)} entries? [y/N]{colorama.Style.RESET_ALL}")
-    if ans.lower() != 'y':
+    if answer.lower() != 'y':
         Logger.info("Aborted")
         return
     data_drop = data_drop[~data_drop.isin(data_pick)].dropna()
