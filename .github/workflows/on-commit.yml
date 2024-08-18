@@ -18,17 +18,22 @@ jobs:
   check-no-ci:
     runs-on: ubuntu-latest
     needs: fetch-commit-message
+    outputs:
+      no_ci: ${{ steps.check_no_ci.outputs.no_ci }}
     steps:
     - name: "Check for [no_ci] in commit message"
+      id: check_no_ci
       run: |
         if echo "${{ needs.fetch-commit-message.outputs.commit_message }}" | grep -iq '\[no_ci\]'; then
-          echo "Skipping CI run due to [no_ci] in commit message"
-          exit 0
+          echo "::set-output name=no_ci::true"
+        else
+          echo "::set-output name=no_ci::false"
         fi
 
   run-main:
     runs-on: ubuntu-latest
     needs: check-no-ci
+    if: needs.check-no-ci.outputs.no_ci == 'false'
     steps:
     - uses: actions/checkout@v2
     - name: "Set up Python"
@@ -44,7 +49,10 @@ jobs:
 
   commit-results:
     runs-on: ubuntu-latest
-    needs: run-main
+    needs: 
+      - check-no-ci
+      - run-main
+    if: needs.check-no-ci.outputs.no_ci == 'false'
     steps:
     - uses: actions/checkout@v2
     - name: "Commit results"
@@ -54,3 +62,12 @@ jobs:
         git add .
         git commit -m "Github Actions CI" || echo "Nothing to commit"
         git push || echo "Nothing to push"
+
+  # skip-ci:
+  #   runs-on: ubuntu-latest
+  #   needs: 
+  #     - check-no-ci
+  #   if: needs.check-no-ci.outputs.no_ci == 'true'
+  #   steps:
+  #   - name: "Skip CI"
+  #     run: echo "CI skipped due to [no_ci] in commit message"
