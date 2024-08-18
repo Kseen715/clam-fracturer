@@ -5,24 +5,64 @@ on:
     branches:
       - main
 jobs:
-    run:
-        runs-on: ubuntu-latest
-        steps:
-        - uses: actions/checkout@v2
-        - name: "Set up Python"
-          uses: actions/setup-python@v2
-          with:
-            python-version: '3.x'
-        - name: "Install dependencies"
-          run: |
-            python -m pip install --upgrade pip
-            pip install -r requirements.txt
-        - name: "Run all"
-          run: python ./src/runall.py
-        - name: "Commit results"
-          run: |
-            git config --global user.email ""
-            git config --global user.name "GitHub Actions"
-            git add .
-            git commit -m "Auto fracture run" || echo "Nothing to commit"
-            git push || echo "Nothing to push"
+  fetch-commit-message:
+    runs-on: ubuntu-latest
+    outputs:
+      commit_message: ${{ steps.get_commit_message.outputs.message }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: "Fetch commit message"
+      id: get_commit_message
+      run: echo "::set-output name=message::$(git log -1 --pretty=%B)"
+
+  check-no-ci:
+    runs-on: ubuntu-latest
+    needs: fetch-commit-message
+    steps:
+    - name: "Check for [no_ci] in commit message"
+      run: |
+        if echo "${{ needs.fetch-commit-message.outputs.commit_message }}" | grep -iq '\[no_ci\]'; then
+          echo "Skipping CI run due to [no_ci] in commit message"
+          exit 0
+        fi
+
+  setup-python:
+    runs-on: ubuntu-latest
+    needs: [fetch-commit-message, check-no-ci]
+    steps:
+    - uses: actions/checkout@v2
+    - name: "Set up Python"
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+  install-dependencies:
+    runs-on: ubuntu-latest
+    needs: setup-python
+    steps:
+    - uses: actions/checkout@v2
+    - name: "Install dependencies"
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+  run-all:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
+    - uses: actions/checkout@v2
+    - name: "Run all"
+      run: python ./src/runall.py
+
+  commit-results:
+    runs-on: ubuntu-latest
+    needs: run-all
+    steps:
+    - uses: actions/checkout@v2
+    - name: "Commit results"
+      run: |
+        git config --global user.email ""
+        git config --global user.name "GitHub Actions"
+        git add .
+        git commit -m "Auto fracture run" || echo "Nothing to commit"
+        git push || echo "Nothing to push"
