@@ -1,3 +1,5 @@
 *__pycache__
 /in/*
 !/in/known/
+.env
+.logs/

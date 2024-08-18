@@ -1,24 +1,272 @@
-import pandas as pd
 import datetime, os, json
 # from hashlib import sha256
 
+import pandas as pd
 import colorama
 
+# ==============================================================================
+# Logger class
+# by Kseen715
+# v1.5
+# ==============================================================================
+import datetime, inspect
 
-DB_FILE = 'db.csv'
+# To drop the following imports and whole requirements.txt file:
+# ==============================================================================
+# Part of colorama.py module
+# ==============================================================================
+# colorama's LICENSE:
+"""
+Copyright (c) 2010 Jonathan Hartley
+All rights reserved.
 
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+* Neither the name of the copyright holders, nor those of its contributors
+  may be used to endorse or promote products derived from this software without
+  specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+# 
+# 
+CSI = '\033['
+# 
+# 
+def code_to_chars(code):
+    return CSI + str(code) + 'm'
+# 
+# 
+class colorama:
+    class AnsiCodes(object):
+        def __init__(self):
+            # the subclasses declare class attributes which are numbers.
+            # Upon instantiation we define instance attributes, which are the 
+            # same as the class attributes but wrapped with the ANSI escape 
+            # sequence
+            for name in dir(self):
+                if not name.startswith('_'):
+                    value = getattr(self, name)
+                    setattr(self, name, code_to_chars(value))
+    # 
+    # 
+    class AnsiFore(AnsiCodes):
+        BLACK           = 30
+        RED             = 31
+        GREEN           = 32
+        YELLOW          = 33
+        BLUE            = 34
+        MAGENTA         = 35
+        CYAN            = 36
+        WHITE           = 37
+        RESET           = 39
+    # 
+        # These are fairly well supported, but not part of the standard.
+        LIGHTBLACK_EX   = 90
+        LIGHTRED_EX     = 91
+        LIGHTGREEN_EX   = 92
+        LIGHTYELLOW_EX  = 93
+        LIGHTBLUE_EX    = 94
+        LIGHTMAGENTA_EX = 95
+        LIGHTCYAN_EX    = 96
+        LIGHTWHITE_EX   = 97
+    # 
+    # 
+    class AnsiStyle(AnsiCodes):
+        BRIGHT    = 1
+        DIM       = 2
+        NORMAL    = 22
+        RESET_ALL = 0
+    # 
+    # 
+    Fore   = AnsiFore()
+    Style  = AnsiStyle()
+# ==============================================================================
+# End of colorama.py module
+# ==============================================================================
 
 LOG_LEVELS = {
-    'NONE': 0,
-    'ERROR': 1,
-    'WARNING': 2,
-    'SUCCESS': 3,
-    'INFO': 4,
-}
+        'NONE': 0,
+        'ERROR': 1,
+        'WARNING': 2,
+        'SUCCESS': 3,
+        'INFO': 4,
+        'DEBUG': 5,
+    }
+
+# Log level for stdout/stderr. 
+# Will be saved to the log file regardless of this setting.
+LOG_LEVEL = 4
+
+# Log file, stdout only if empty
+LOG_FILE = './.logs/log.log'
+LOG_FILE_MAX_SIZE = 1024 * 1024  # 1 MB
 
 
-LOG_LEVEL = LOG_LEVELS['INFO']
+class Logger:
+    @staticmethod
+    def __custom_print__(msg: str, level: str, style: str = None, 
+                         do_inspect: bool = False, 
+                         inspect_stack_offset: int = 1, 
+                         do_write_file: bool = True,
+                         do_write_stdout: bool = True):
+        """Log custom message
 
+        Args:
+            msg (str): Custom message
+            level (int): Log level
+            color (str): Color
+        """
+        while msg.endswith('\n'):
+            msg = msg[:-1]
+        if do_inspect:
+            frame = inspect.stack()[inspect_stack_offset]
+            file_name = frame.filename
+            line_number = frame.lineno
+            msg = f"{msg} ({file_name}:{line_number})"
+        if LOG_FILE and do_write_file:
+            if not os.path.exists(os.path.dirname(LOG_FILE)):
+                os.makedirs(os.path.dirname(LOG_FILE))
+            with open(LOG_FILE, 'a') as f:
+                f.write(f'{datetime.datetime.now()} ' \
+                        + f'[{level}] {msg}\n')
+            if os.path.getsize(LOG_FILE) > LOG_FILE_MAX_SIZE * 0.9:
+                with open(LOG_FILE, 'rb') as f:
+                    f.seek(-LOG_FILE_MAX_SIZE, os.SEEK_END)
+                    data = f.read()
+                with open(LOG_FILE, 'wb') as f:
+                    f.write(data)
+        if do_write_stdout:
+            print(f'{style}{datetime.datetime.now()} ' \
+                + f'[{level}] {msg}{colorama.Style.RESET_ALL}')
+        
+
+    @staticmethod
+    def __custom_input__(msg: str, level: str, style: str,
+                         do_write_file: bool = True):
+        """Log custom message
+
+        Args:
+            msg (str): Custom message
+            color (str): Color
+        """
+        inpt = input(f'{style}{datetime.datetime.now()} ' \
+                  + f'[{level}] {msg}{colorama.Style.RESET_ALL}')
+        if LOG_FILE and do_write_file:
+            if not os.path.exists(os.path.dirname(LOG_FILE)):
+                os.makedirs(os.path.dirname(LOG_FILE))
+            with open(LOG_FILE, 'a') as f:
+                f.write(f'{style}{datetime.datetime.now()} ' \
+                        + f'[{level}] {msg}{colorama.Style.RESET_ALL}' \
+                        + inpt + '\n')
+            if os.path.getsize(LOG_FILE) > LOG_FILE_MAX_SIZE * 0.9:
+                with open(LOG_FILE, 'rb') as f:
+                    f.seek(-LOG_FILE_MAX_SIZE, os.SEEK_END)
+                    data = f.read()
+                with open(LOG_FILE, 'wb') as f:
+                    f.write(data)
+        return inpt
+
+
+    @staticmethod
+    def debug(msg, do_inspect=True):
+        """Log debug message
+
+        Args:
+            msg (str): Debug message
+        """
+        Logger.__custom_print__(msg, 'DEBUG', \
+                                colorama.Fore.LIGHTMAGENTA_EX, \
+                                do_inspect, 2, True, \
+                                LOG_LEVEL >= LOG_LEVELS['DEBUG'])
+            
+
+
+    @staticmethod
+    def info(msg, do_inspect=False):
+        """Log info message
+
+        Args:
+            msg (str): Info message
+        """
+        Logger.__custom_print__(msg, 'INFO', \
+                                colorama.Style.RESET_ALL, \
+                                do_inspect, 2, True, \
+                                LOG_LEVEL >= LOG_LEVELS['INFO'])
+
+
+    @staticmethod
+    def happy(msg, do_inspect=False):
+        """Log happy message
+
+        Args:
+            msg (str): Happy message
+        """
+        Logger.__custom_print__(msg, 'SUCCESS', \
+                                colorama.Fore.GREEN, \
+                                do_inspect, 2, True, \
+                                LOG_LEVEL >= LOG_LEVELS['SUCCESS'])
+
+
+    @staticmethod
+    def warning(msg, do_inspect=False):
+        """Log warning message
+
+        Args:
+            msg (str): Warning message
+        """
+        Logger.__custom_print__(msg, 'WARNING', \
+                                colorama.Fore.YELLOW, \
+                                do_inspect, 2, True, \
+                                LOG_LEVEL >= LOG_LEVELS['WARNING'])
+
+
+    @staticmethod
+    def error(msg, do_inspect=True):
+        """Log error message
+
+        Args:
+            msg (str): Error message
+        """
+        Logger.__custom_print__(msg, 'ERROR', \
+                                colorama.Fore.RED, \
+                                do_inspect, 2, True, \
+                                LOG_LEVEL >= LOG_LEVELS['ERROR'])
+
+
+    @staticmethod
+    def input(msg, do_inspect=False):
+        """Log input message
+
+        Args:
+            msg (str): Input message
+        """
+        return Logger.__custom_input__(msg, 'INPUT', \
+                                        colorama.Fore.CYAN, \
+                                        do_inspect, 2)
+
+# ==============================================================================
+# End of Logger class
+# ==============================================================================
+
+DB_FILE = 'db.csv'
 
 def read_csv(filename, include_first_line=False):
     """_summary_ Read data from csv file
@@ -72,7 +320,6 @@ def write_txt(data, filename):
         f.write('\n'.join(data))
         
 
-
 def write_json(data, filename):
     """_summary_ Save data to json file
 
@@ -82,46 +329,6 @@ def write_json(data, filename):
     """
     with open(filename, 'w') as f:
         json.dump(data, f, indent=4)
-
-
-def log_happy(msg):
-    """_summary_ Log happy message
-
-    Args:
-        msg (str): Happy message
-    """
-    if LOG_LEVEL >= LOG_LEVELS['SUCCESS']:
-        print(f'{colorama.Fore.GREEN}{datetime.datetime.now()} [SUCCESS] {msg}{colorama.Style.RESET_ALL}')
-
-
-def log_info(msg):
-    """_summary_ Log info message
-
-    Args:
-        msg (str): Info message
-    """
-    if LOG_LEVEL >= LOG_LEVELS['INFO']:
-        print(f'{colorama.Style.RESET_ALL}{datetime.datetime.now()} [INFO] {msg}{colorama.Style.RESET_ALL}')
-
-
-def log_warning(msg):
-    """_summary_ Log warning message
-
-    Args:
-        msg (str): Warning message
-    """
-    if LOG_LEVEL >= LOG_LEVELS['WARNING']:
-        print(f'{colorama.Fore.YELLOW}{datetime.datetime.now()} [WARNING] {msg}{colorama.Style.RESET_ALL}')
-
-
-def log_error(msg):
-    """_summary_ Log error message
-
-    Args:
-        msg (str): Error message
-    """
-    if LOG_LEVEL >= LOG_LEVELS['ERROR']:
-        print(f'{colorama.Fore.RED}{datetime.datetime.now()} [ERROR] {msg}{colorama.Style.RESET_ALL}')
 
 
 class FastHash:
@@ -144,7 +351,6 @@ class FastHash:
     def hexdigest(self):
         """Return the hexadecimal digest of the data passed to the update() method so far"""
         return ''.join(f'{byte:02x}' for byte in self._hash_value)
-
 
 
 def hash_file(filename):
@@ -188,7 +394,7 @@ def save_hash_binary(new_hash_bytes, new_hash_filename):
         os.makedirs(os.path.dirname(new_hash_filename))
     with open(new_hash_filename, 'wb') as f:
         f.write(new_hash_bytes)
-    log_info(f'Saved hash to {new_hash_filename}')
+    Logger.info(f'Saved hash to {new_hash_filename}')
 
     
 def read_file_binary(filename):
@@ -241,9 +447,9 @@ def is_cidr_valid(cidr: str):
         # check if there are any non-zero bits
         for bit in str_ip:
             if bit != '0':
-                log_info(f'{str_ip}')
-                log_info(f'{_str_ip}')
-                log_info(f'{"1" * mask}' + '0' * (32 - mask))
+                Logger.info(f'{str_ip}')
+                Logger.info(f'{_str_ip}')
+                Logger.info(f'{"1" * mask}' + '0' * (32 - mask))
                 return False
         return True
     elif ':' in cidr:
@@ -265,9 +471,9 @@ def is_cidr_valid(cidr: str):
         # check if there are any non-zero bits
         for bit in str_ip:
             if bit != '0':
-                log_info(f'{str_ip}')
-                log_info(f'{_str_ip}')
-                log_info(f'{"1" * mask}' + '0' * (128 - mask))
+                Logger.info(f'{str_ip}')
+                Logger.info(f'{_str_ip}')
+                Logger.info(f'{"1" * mask}' + '0' * (128 - mask))
                 return False
         return True
     

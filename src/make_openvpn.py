@@ -11,7 +11,7 @@ route <ipv4> <mask>
 """
 
 def make_openvpn():
-    log_info('make_openvpn: Starting')
+    Logger.info('make_openvpn: Starting')
 
     data = read_csv(DB_FILE)
     # if ipv4 contains / then it is a masked ip range
@@ -23,22 +23,22 @@ def make_openvpn():
         try:
             ip = ipaddress.ip_network(row['ipv4'], strict=False)
             masked_ip_list.append(f'route {ip.network_address} {ip.netmask}')
-            # log_info(f'Converted {row["ipv4"]} to {ip.network_address} {ip.netmask}')
+            # Logger.info(f'Converted {row["ipv4"]} to {ip.network_address} {ip.netmask}')
         except ValueError as e:
-            log_warning(f"Invalid CIDR notation {row['ipv4']}: {e}")
+            Logger.warning(f"Invalid CIDR notation {row['ipv4']}: {e}")
             # remove invalid CIDR
             data = data[~(data['ipv4'] == row['ipv4'])]
-            log_info(f'Dropped {row["ipv4"]} because it is invalid CIDR notation')
+            Logger.info(f'Dropped {row["ipv4"]} because it is invalid CIDR notation')
 
     # remove masked ip range from data
     data = data[~data['ipv4'].str.contains('/')]
     # append remaining ips with MASK
     for index, row in data.iterrows():
         masked_ip_list.append(f'route {row["ipv4"]} 255.255.255.255')
-        # log_info(f'Added {row["ipv4"]}
+        # Logger.info(f'Added {row["ipv4"]}
     write_txt(masked_ip_list, 'out/openvpn_route.ovpn')
-    log_happy('OpenVPN file created')
-    log_info('make_openvpn: Finished')
+    Logger.happy('OpenVPN file created')
+    Logger.info('make_openvpn: Finished')
 
 
 if __name__ == '__main__':

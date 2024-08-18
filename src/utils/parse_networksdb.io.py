@@ -25,8 +25,8 @@ def convert_ipv4_range_into_cidr(r_left, r_right):
 
 
 def parse_ip_address_of(url: str, filename: str = None):
-    log_info('parse_ip_address_of: Starting')
-    log_info('URL: ' + url)
+    Logger.info('parse_ip_address_of: Starting')
+    Logger.info('URL: ' + url)
     # Send a GET request to fetch the raw HTML content
     response = requests.get(url, headers=headers)
     response.raise_for_status()  # Ensure the request was successful
@@ -50,12 +50,12 @@ def parse_ip_address_of(url: str, filename: str = None):
             'block_size': temp_list[2]
         }
         result.append(data_dict['cidr'])
-        log_info('Found CIDR: ' + data_dict['cidr'])
-    log_happy('Found ' + str(len(result)) + ' CIDR notations for ' + url)
+        Logger.info('Found CIDR: ' + data_dict['cidr'])
+    Logger.happy('Found ' + str(len(result)) + ' CIDR notations for ' + url)
     if filename:
         write_txt(result, filename)
-        log_info('Saved to ' + filename)
-    log_info('parse_ip_address_of: Finished')
+        Logger.info('Saved to ' + filename)
+    Logger.info('parse_ip_address_of: Finished')
     return result
 
 

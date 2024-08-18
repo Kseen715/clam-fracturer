@@ -11,7 +11,7 @@ from common import *
 # AllowedIPs = 195.201.201.32/32, 192.173.68.0/24, 54.144.0.0/12, 54.192.0.0/12
 # TODO: android client can process ~256 peers, so we need to compact the list via some smart shit
 def make_wireguard():
-    log_info('make_wireguard: Starting')
+    Logger.info('make_wireguard: Starting')
 
     data = read_csv(DB_FILE)
     file_str = ""
@@ -29,8 +29,8 @@ def make_wireguard():
 
     with open('out/wireguard_incomplete.conf', 'w') as file:
         file.write(file_str)
-    log_happy('Wireguard file created')
-    log_info('make_wireguard: Finished')
+    Logger.happy('Wireguard file created')
+    Logger.info('make_wireguard: Finished')
 
 
 if __name__ == '__main__':

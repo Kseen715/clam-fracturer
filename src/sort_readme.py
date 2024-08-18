@@ -6,15 +6,15 @@ import os
 
 
 def sort_readme():
-    log_info('sort_readme: Starting')
+    Logger.info('sort_readme: Starting')
     if os.path.exists('./hashes/README.md.hash'):
         if not check_hash_binary(hash_file('README.md'), './hashes/README.md.hash'):
-            log_warning('README.md has been modified')
+            Logger.warning('README.md has been modified')
         else:
-            log_info('README.md has not been modified')
+            Logger.info('README.md has not been modified')
             return
     else:
-        log_warning('No hash file found for README.md')
+        Logger.warning('No hash file found for README.md')
     
     with open('README.md', 'r') as f:
         readme = f.readlines()
@@ -40,9 +40,9 @@ def sort_readme():
     with open('README.md', 'w') as f:
         f.writelines(sorted_readme)
     
-    log_happy('README.md sorted')
+    Logger.happy('README.md sorted')
     save_hash_binary(hash_file('README.md'), './hashes/README.md.hash')
-    log_info('sort_readme: Finished')
+    Logger.info('sort_readme: Finished')
 
 
 if __name__ == '__main__':

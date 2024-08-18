@@ -12,7 +12,7 @@ route ADD 69.171.224.0 MASK 255.255.224.0 0.0.0.0 ->
 """
 
 def convert_route_add_to_cidr(filename):
-    log_info('convert_route_add_to_cidr: Starting')
+    Logger.info('convert_route_add_to_cidr: Starting')
     # read route add commands
     route_add = None
     with open(filename, 'r') as f:
@@ -24,10 +24,10 @@ def convert_route_add_to_cidr(filename):
         route = route.split()
         ip = ipaddress.ip_network(f"{route[2]}/{route[4]}", strict=False)
         cidr_list.append(str(ip))
-        log_info(f'Converted {route[2]} MASK {route[4]} to {str(ip)}')
+        Logger.info(f'Converted {route[2]} MASK {route[4]} to {str(ip)}')
     write_txt(cidr_list, 'in/cidr.txt')
-    log_happy('CIDR file created')
-    log_info('convert_route_add_to_cidr: Finished')
+    Logger.happy('CIDR file created')
+    Logger.info('convert_route_add_to_cidr: Finished')
 
 
 if __name__ == '__main__':

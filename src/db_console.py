@@ -6,20 +6,20 @@ def drop_by_ip(ip):
     data = read_csv(DB_FILE)
     data = [x for x in data if x[0] != ip]
     write_csv(data, DB_FILE)
-    log_happy(f"Deleted {ip}")
+    Logger.happy(f"Deleted {ip}")
 
 
 def drop_by_hostname(hostname):
     data = read_csv(DB_FILE)
     data = [x for x in data if x[1] != hostname]
     write_csv(data, DB_FILE)
-    log_happy(f"Deleted {hostname}")
+    Logger.happy(f"Deleted {hostname}")
 
 
 def insert_entry(ip, hostname, comment):
-    log_info(f"Inserting \"{ip}\",\"{hostname}\",\"{comment}\"")
+    Logger.info(f"Inserting \"{ip}\",\"{hostname}\",\"{comment}\"")
     if not ip or not hostname:
-        log_warning("IP and hostname are required")
+        Logger.warning("IP and hostname are required")
         return
     if not comment:
         comment = ""
@@ -27,26 +27,26 @@ def insert_entry(ip, hostname, comment):
     new_data = pd.DataFrame([[ip, hostname, comment]], columns=["ipv4", "hostname", "comment"])
     data = pd.concat([data, new_data], ignore_index=True)
     write_csv(data, DB_FILE)
-    log_happy(f"Inserted \"{ip}\",\"{hostname}\",\"{comment}\"")
+    Logger.happy(f"Inserted \"{ip}\",\"{hostname}\",\"{comment}\"")
 
 
 def insert_ip_list(filename, hostname, comment):
     if not hostname:
-        log_warning("Hostname is required")
+        Logger.warning("Hostname is required")
         return
     if not comment:
         comment = ""
     if not filename:
-        log_warning("Filename is required")
+        Logger.warning("Filename is required")
         return
     data = read_csv(DB_FILE)
     new_data = pd.read_csv(filename, header=None, names=["ipv4"])
     new_data["hostname"] = hostname
     new_data["comment"] = comment
-    log_info(f"Inserting {len(new_data)} IPs from {filename} with hostname \"{hostname}\" and comment \"{comment}\"")
+    Logger.info(f"Inserting {len(new_data)} IPs from {filename} with hostname \"{hostname}\" and comment \"{comment}\"")
     data = pd.concat([data, new_data], ignore_index=True)
     write_csv(data, DB_FILE)
-    log_happy(f"Inserted IPs from {filename}")
+    Logger.happy(f"Inserted IPs from {filename}")
 
 
 CONSOLE_DROP_PARAMETERS = {
@@ -60,7 +60,7 @@ CONSOLE_DROP_PARAMETERS = {
 def drop(parameters, arguments):
     # drop all entries with given parameters, use AND logic
     if 'comment' in parameters and 'comment-part' in parameters:
-        log_warning("Cannot use both --comment and --comment-part")
+        Logger.warning("Cannot use both --comment and --comment-part")
         return
     data_pick = read_csv(DB_FILE)
     if 'ipv4' in parameters:
@@ -72,17 +72,17 @@ def drop(parameters, arguments):
     if 'comment-part' in parameters:
         data_pick = data_pick[data_pick['comment'].fillna('').str.contains(arguments['comment-part'])]
     data_drop = read_csv(DB_FILE)
-    log_info(f"Dropping {len(data_pick)} entries")
+    Logger.info(f"Dropping {len(data_pick)} entries")
     ans = None
     if len(data_pick) != 0:
         ans = input(f"{colorama.Fore.RED}ARE YOU SURE "\
             + f"you want to DROP {len(data_pick)} entries? [y/N]{colorama.Style.RESET_ALL}")
     if ans.lower() != 'y':
-        log_info("Aborted")
+        Logger.info("Aborted")
         return
     data_drop = data_drop[~data_drop.isin(data_pick)].dropna()
     write_csv(data_drop, DB_FILE)
-    log_happy(f"Dropped {len(data_pick)} entries")
+    Logger.happy(f"Dropped {len(data_pick)} entries")
     
 
 if __name__ == '__main__':
@@ -102,10 +102,10 @@ if __name__ == '__main__':
         drop_parameters = {}
         drop_arguments = {}
         if len(args.drop) == 0:
-            log_warning("No parameters to drop")
+            Logger.warning("No parameters to drop")
             exit(1)
         if len(args.drop) % 2 != 0:
-            log_warning("Each parameter must be followed by its value")
+            Logger.warning("Each parameter must be followed by its value")
             exit(1)
         for i in range(0, len(args.drop), 2):
             param = args.drop[i]
@@ -113,7 +113,7 @@ if __name__ == '__main__':
             if param in CONSOLE_DROP_PARAMETERS:
                 drop_parameters[param] = CONSOLE_DROP_PARAMETERS[param]
                 drop_arguments[param] = value
-        log_info(f"Dropping by {drop_arguments}")
+        Logger.info(f"Dropping by {drop_arguments}")
         drop(drop_parameters, drop_arguments)
     elif args.insert_entry:
         insert_entry(*args.insert_entry)

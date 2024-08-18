@@ -2,7 +2,7 @@ import ipaddress
 from common import *
 
 def maskt2ipv4():
-    log_info('maskt2ipv4: Starting')
+    Logger.info('maskt2ipv4: Starting')
     cidr_count = 0
     converted_ip_count = 0
     data = read_csv(DB_FILE)
@@ -18,7 +18,7 @@ def maskt2ipv4():
             else:
                 comment = "__CIDR_CONVERTED__"
             ip_list.append({'hostname': row['hostname'], 'ipv4': str(i), 'comment': comment})
-        log_info(f'Converted {row["ipv4"]} to {ip.num_addresses} ip addresses')
+        Logger.info(f'Converted {row["ipv4"]} to {ip.num_addresses} ip addresses')
         cidr_count += 1
         converted_ip_count += ip.num_addresses
     # remove masked ip range from data
@@ -26,8 +26,8 @@ def maskt2ipv4():
     # append ip list to data
     data = pd.concat([data, pd.DataFrame(ip_list)], ignore_index=True)
     write_csv(data, DB_FILE)
-    log_happy('Converted {} masked IP ranges to {} IP addresses'.format(cidr_count, converted_ip_count))
-    log_info('maskt2ipv4: Finished')
+    Logger.happy('Converted {} masked IP ranges to {} IP addresses'.format(cidr_count, converted_ip_count))
+    Logger.info('maskt2ipv4: Finished')
 
 
 if __name__ == '__main__':

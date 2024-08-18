@@ -29,7 +29,7 @@ if ipv4 not contain / then it is a single ip address, just add it to route
 """
 
 def make_route_bat():
-    log_info('make_route_bat: Starting')
+    Logger.info('make_route_bat: Starting')
 
     data = read_csv(DB_FILE)
     # if ipv4 contains / then it is a masked ip range
@@ -40,23 +40,23 @@ def make_route_bat():
         try:
             ip = ipaddress.ip_network(row['ipv4'], strict=False)
             masked_ip_list.append(f'route ADD {ip.network_address} MASK {ip.netmask} {ip.hostmask}')
-            # log_info(f'Converted {row["ipv4"]} to {ip.network_address} MASK {ip.netmask} {ip.hostmask}')
+            # Logger.info(f'Converted {row["ipv4"]} to {ip.network_address} MASK {ip.netmask} {ip.hostmask}')
         except ValueError as e:
-            log_warning(f"Invalid CIDR notation {row['ipv4']}: {e}")
+            Logger.warning(f"Invalid CIDR notation {row['ipv4']}: {e}")
             # remove invalid CIDR
             data = data[~(data['ipv4'] == row['ipv4'])]
-            log_info(f'Dropped {row["ipv4"]} because it is invalid CIDR notation')
+            Logger.info(f'Dropped {row["ipv4"]} because it is invalid CIDR notation')
 
     # remove masked ip range from data
     data = data[~data['ipv4'].str.contains('/')]
     # append remaining ips with MASK 255.255.255.255 0.0.0.0
     for index, row in data.iterrows():
         masked_ip_list.append(f'route ADD {row["ipv4"]} MASK 255.255.255.255 0.0.0.0')
-        # log_info(f'Added {row["ipv4"]} MASK 255.255.255.255 0.0.0.0')
+        # Logger.info(f'Added {row["ipv4"]} MASK 255.255.255.255 0.0.0.0')
 
     write_txt(masked_ip_list, 'out/route_add.bat')
-    log_happy('Route file created')
-    log_info('make_route_bat: Finished')
+    Logger.happy('Route file created')
+    Logger.info('make_route_bat: Finished')
 
 
 if __name__ == '__main__':
