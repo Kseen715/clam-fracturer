@@ -243,7 +243,7 @@ def is_cidr_valid(cidr: str):
             if bit != '0':
                 log_info(f'{str_ip}')
                 log_info(f'{_str_ip}')
-                log_info(f'{'1' * mask}' + '0' * (32 - mask))
+                log_info(f'{"1" * mask}' + '0' * (32 - mask))
                 return False
         return True
     elif ':' in cidr:
@@ -267,7 +267,7 @@ def is_cidr_valid(cidr: str):
             if bit != '0':
                 log_info(f'{str_ip}')
                 log_info(f'{_str_ip}')
-                log_info(f'{'1' * mask}' + '0' * (128 - mask))
+                log_info(f'{"1" * mask}' + '0' * (128 - mask))
                 return False
         return True
     
