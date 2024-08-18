@@ -658,6 +658,8 @@
 "66.197.128.0/17","netflix.com","__KNOWN__"
 "104.16.0.0/12","nhentai.net","__KNOWN__"
 "172.64.0.0/13","nhentai.net","__KNOWN__"
+"185.199.108.0/22","raw.githubusercontent.com","__KNOWN__"
+"2606:50c0:8000::/46","raw.githubusercontent.com","__KNOWN__"
 "2606:4700::/32","rutracker.org","__KNOWN__"
 "104.244.42.1/32","x.com","__KNOWN__"
 "104.244.42.129/32","x.com","__KNOWN__"

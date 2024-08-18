@@ -657,6 +657,8 @@ route ADD 64.120.128.0 MASK 255.255.128.0 0.0.127.255
 route ADD 66.197.128.0 MASK 255.255.128.0 0.0.127.255
 route ADD 104.16.0.0 MASK 255.240.0.0 0.15.255.255
 route ADD 172.64.0.0 MASK 255.248.0.0 0.7.255.255
+route ADD 185.199.108.0 MASK 255.255.252.0 0.0.3.255
+route ADD 2606:50c0:8000:: MASK ffff:ffff:fffc:: ::3:ffff:ffff:ffff:ffff:ffff
 route ADD 2606:4700:: MASK ffff:ffff:: ::ffff:ffff:ffff:ffff:ffff:ffff
 route ADD 104.244.42.1 MASK 255.255.255.255 0.0.0.0
 route ADD 104.244.42.129 MASK 255.255.255.255 0.0.0.0

@@ -22,6 +22,7 @@ We include all known proxies of listed sites to raise chance of correct routing.
 - microsoft - from [[x]](https://networksdb.io/ip-addresses-of/microsoft-corp)
 - netflix - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - nhentai.net - from [[x]](https://networksdb.io/domain-to-ips/nhentai.net)
+- raw.githubusercontent.com - from [[x]](https://networksdb.io/)
 - rutracker.org - from [[x]](https://networksdb.io/)
 - x.com - from [[x]](https://rockblack.su/vpn/dopolnitelno/diapazon-ip-adresov)
 - xhamster.com - from [[x]](https://networksdb.io/)
