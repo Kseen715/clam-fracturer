@@ -1,4 +1,5 @@
 import datetime, os, json
+import ipaddress
 # from hashlib import sha256
 
 import pandas as pd
@@ -7,7 +8,7 @@ import colorama
 # ==============================================================================
 # Logger class
 # by Kseen715
-# v1.5
+# v1.6
 # ==============================================================================
 import datetime, inspect
 
@@ -118,7 +119,7 @@ LOG_LEVEL = 4
 # Log file, stdout only if empty
 LOG_FILE = './.logs/log.log'
 LOG_FILE_MAX_SIZE = 1024 * 1024  # 1 MB
-
+LOG_DEBUG_COLOR = colorama.Fore.LIGHTMAGENTA_EX
 
 class Logger:
     @staticmethod
@@ -134,13 +135,15 @@ class Logger:
             level (int): Log level
             color (str): Color
         """
+        msg = str(msg)
         while msg.endswith('\n'):
             msg = msg[:-1]
         if do_inspect:
             frame = inspect.stack()[inspect_stack_offset]
             file_name = frame.filename
             line_number = frame.lineno
-            msg = f"{msg} ({file_name}:{line_number})"
+            function_name = frame.function
+            msg = f"{msg} ({file_name}:{line_number}:{function_name})"
         if LOG_FILE and do_write_file:
             if not os.path.exists(os.path.dirname(LOG_FILE)):
                 os.makedirs(os.path.dirname(LOG_FILE))
@@ -167,6 +170,7 @@ class Logger:
             msg (str): Custom message
             color (str): Color
         """
+        msg = str(msg)
         inpt = input(f'{style}{datetime.datetime.now()} ' \
                   + f'[{level}] {msg}{colorama.Style.RESET_ALL}')
         if LOG_FILE and do_write_file:
@@ -193,7 +197,7 @@ class Logger:
             msg (str): Debug message
         """
         Logger.__custom_print__(msg, 'DEBUG', \
-                                colorama.Fore.LIGHTMAGENTA_EX, \
+                                LOG_DEBUG_COLOR, \
                                 do_inspect, 2, True, \
                                 LOG_LEVEL >= LOG_LEVELS['DEBUG'])
             
@@ -226,7 +230,7 @@ class Logger:
 
 
     @staticmethod
-    def warning(msg, do_inspect=False):
+    def warning(msg, do_inspect=True):
         """Log warning message
 
         Args:
@@ -447,9 +451,6 @@ def is_cidr_valid(cidr: str):
         # check if there are any non-zero bits
         for bit in str_ip:
             if bit != '0':
-                Logger.info(f'{str_ip}')
-                Logger.info(f'{_str_ip}')
-                Logger.info(f'{"1" * mask}' + '0' * (32 - mask))
                 return False
         return True
     elif ':' in cidr:
@@ -471,10 +472,523 @@ def is_cidr_valid(cidr: str):
         # check if there are any non-zero bits
         for bit in str_ip:
             if bit != '0':
-                Logger.info(f'{str_ip}')
-                Logger.info(f'{_str_ip}')
-                Logger.info(f'{"1" * mask}' + '0' * (128 - mask))
                 return False
         return True
     
     return False
+
+
+def cidr_size(cidr: str) -> int:
+    """_summary_ Get CIDR size
+
+    Args:
+        cidr (str): CIDR to get size
+
+    Returns:
+        int: Size of the CIDR
+    """
+    if '.' in cidr:
+        ip, mask = cidr.split('/')
+        mask = int(mask)
+        return 2 ** (32 - mask)
+    elif ':' in cidr:
+        ip, mask = cidr.split('/')
+        mask = int(mask)
+        return 2 ** (128 - mask)
+    return 0
+
+
+def ip_full(ip: str) -> str:
+    """_summary_ Get full IP
+
+    Args:
+        ip (str): IP to get full
+
+    Returns:
+        str: Full IP
+    """
+    if '.' in ip:
+        try:
+            ip = ipaddress.IPv4Address(ip)
+            return str(ip.exploded)
+        except ipaddress.AddressValueError:
+            Logger.warning(f'Invalid IPv4 address: {ip}')
+            return ''
+    elif ':' in ip:
+        try:
+            ip = ipaddress.IPv6Address(ip)
+            return str(ip.exploded)
+        except ipaddress.AddressValueError:
+            Logger.warning(f'Invalid IPv6 address: {ip}')
+            return ''
+    Logger.warning(f'Invalid IP address: {ip}')
+    return ''
+
+
+
+
+def ip_short(ip: str) -> str:
+    """_summary_ Get short IP
+    aka remove only-zero octets
+
+    Args:
+        ip (str): IP to get short
+
+    Returns:
+        str: Short IP
+    """
+    if '.' in ip:
+        try:
+            ipv4 = ipaddress.IPv4Address(ip)
+            return str(ipv4.compressed)
+        except ipaddress.AddressValueError:
+            Logger.warning(f'Invalid IPv4 address: {ip}')
+            return ''
+    elif ':' in ip:
+        try:
+            ipv6 = ipaddress.IPv6Address(ip)
+            return str(ipv6.compressed)
+        except ipaddress.AddressValueError:
+            Logger.warning(f'Invalid IPv6 address: {ip}')
+            return ''
+    Logger.warning(f'Invalid IP address: {ip}')
+    return ''
+    
+
+def cidr_full(cidr: str) -> str:
+    """_summary_ Get full CIDR
+
+    Args:
+        cidr (str): CIDR to get full
+
+    Returns:
+        str: Full CIDR
+    """
+    if '.' in cidr:
+        ip, mask = cidr.split('/')
+        mask = int(mask)
+        ip = ip_full(ip)
+        return f'{ip}/{mask}'
+    elif ':' in cidr:
+        ip, mask = cidr.split('/')
+        mask = int(mask)
+        ip = ip_full(ip)
+        return f'{ip}/{mask}'
+    Logger.warning(f'Invalid CIDR: {cidr}')
+    return ''
+
+
+def cidr_short(cidr: str) -> str:
+    """_summary_ Get short CIDR
+    aka remove only-zero octets
+
+    Args:
+        cidr (str): CIDR to get short
+
+    Returns:
+        str: Short CIDR
+    """
+    if '.' in cidr:
+        ip, mask = cidr.split('/')
+        ip = ip_short(ip)
+        return f'{ip}/{mask}'
+    elif ':' in cidr:
+        ip, mask = cidr.split('/')
+        ip = ip_short(ip)
+        return f'{ip}/{mask}'
+    Logger.warning(f'Invalid CIDR: {cidr}')
+    return ''
+
+
+def ip_dec(ip: str) -> int:
+    """_summary_ Convert IP to decimal
+
+    Args:
+        ip (str): IP to convert
+
+    Returns:
+        int: Decimal IP
+    """
+    ip = ip_full(ip)
+    if '.' in ip:
+        ip = ip.split('.')
+        ip = [int(x) for x in ip]
+        return ip[0] << 24 | ip[1] << 16 | ip[2] << 8 | ip[3]
+    elif ':' in ip:
+        ip = ip.split(':')
+        ip = [int(x, 16) for x in ip]
+        return ip[0] << 112 | ip[1] << 96 | ip[2] << 80 | ip[3] << 64 | \
+            ip[4] << 48 | ip[5] << 32 | ip[6] << 16 | ip[7]
+    return 0
+
+
+def __ip_dec_unsafe(ip: str) -> int:
+    """_summary_ Convert IP to decimal
+
+    Args:
+        ip (str): IP to convert
+
+    Returns:
+        int: Decimal IP
+    """
+    if '.' in ip:
+        ip = ip.split('.')
+        ip = [int(x) for x in ip]
+        return ip[0] << 24 | ip[1] << 16 | ip[2] << 8 | ip[3]
+    else:
+        ip = ip.split(':')
+        ip = [int(x, 16) for x in ip]
+        return ip[0] << 112 | ip[1] << 96 | ip[2] << 80 | ip[3] << 64 | \
+            ip[4] << 48 | ip[5] << 32 | ip[6] << 16 | ip[7]
+
+
+def __ip_dec_unsafe_from_bits(ip_bits: str) -> int:
+    """_summary_ Convert IP to decimal
+
+    Args:
+        ip_bits (str): IP to convert
+
+    Returns:
+        int: Decimal IP
+    """
+    return int(ip_bits, 2)
+
+
+def cidr_range(cidr: str) -> str:
+    """_summary_ Get CIDR range
+    xxx.xxx.xxx.xxx/xx -> xxx.xxx.xxx.xxx - xxx.xxx.xxx.xxx
+    xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx/xx -> 
+        xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx - 
+            xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx
+
+    Args:
+        cidr (str): CIDR to get range
+
+    Returns:
+        str: Range of the CIDR
+    """
+    cidr = cidr_full(cidr)
+    try:
+        network = ipaddress.ip_network(cidr, strict=False)
+        return f"{network.network_address} - {network.broadcast_address}"
+    except ipaddress.AddressValueError:
+        Logger.warning(f'Invalid CIDR: {cidr}')
+        return ''
+
+
+def compute_cidr_dist(cidr_left: str, cidr_right: str) -> int:
+    """_summary_ Compute distance between two CIDRs
+
+    Args:
+        cidr_left (str): Left CIDR
+        cidr_right (str): Right CIDR
+
+    Returns:
+        int: Distance between the two CIDRs
+    """
+    if ('.' in cidr_left and ':' in cidr_right) or \
+        (':' in cidr_left and '.' in cidr_right): 
+        Logger.warning('IP version mismatch')
+    left_network = ipaddress.IPv4Network(cidr_left)
+    right_network = ipaddress.IPv4Network(cidr_right)
+    if left_network > right_network:
+        left_network, right_network = right_network, left_network
+    left_network = left_network.network_address
+    right_network = right_network.broadcast_address
+    return __ip_dec_unsafe(str(right_network)) - __ip_dec_unsafe(str(left_network)) + 1
+
+
+def __compute_cidr_dist_unsafe(cidr_left: str, cidr_right: str) -> int:
+    """_summary_ Compute distance between two CIDRs
+
+    Args:
+        cidr_left (str): Left CIDR
+        cidr_right (str): Right CIDR
+
+    Returns:
+        int: Distance between the two CIDRs
+    """
+    ip1, mask1 = cidr_left.split('/')
+    ip2, mask2 = cidr_right.split('/')
+    if '.' in ip1:
+        ip_bits1 = ''.join(f'{int(x):08b}' for x in ip1.split('.'))
+        ip_bits2 = ''.join(f'{int(x):08b}' for x in ip2.split('.'))
+        # crop ip_bits1 by mask and add zeros
+        ip_bits1 = ip_bits1[:int(mask1)] + '0' * (32 - int(mask1))
+        # crop ip_bits2 by mask and add ones
+        ip_bits2 = ip_bits2[:int(mask2)] + '1' * (32 - int(mask2))
+        # convert back
+        return abs(__ip_dec_unsafe_from_bits(ip_bits2) - __ip_dec_unsafe_from_bits(ip_bits1)) + 1
+    else:
+        ip_bits1 = ''.join(f'{int(x, 16):016b}' for x in ip1.split(':'))
+        ip_bits2 = ''.join(f'{int(x, 16):016b}' for x in ip2.split(':'))
+        # crop ip_bits1 by mask and add zeros
+        ip_bits1 = ip_bits1[:int(mask1)] + '0' * (128 - int(mask1))
+        # crop ip_bits2 by mask and add ones
+        ip_bits2 = ip_bits2[:int(mask2)] + '1' * (128 - int(mask2))
+        # convert back
+        return abs(__ip_dec_unsafe_from_bits(ip_bits2) - __ip_dec_unsafe_from_bits(ip_bits1)) + 1
+    
+    # if '.' in ip1:
+    #     ip_bits1 = ''.join(f'{int(x):08b}' for x in ip1.split('.'))
+    #     ip_bits2 = ''.join(f'{int(x):08b}' for x in ip2.split('.'))
+    #     # crop ip_bits1 by mask and add zeros
+    #     ip_bits1 = ip_bits1[:int(mask1)] + '0' * (32 - int(mask1))
+    #     # crop ip_bits2 by mask and add ones
+    #     ip_bits2 = ip_bits2[:int(mask2)] + '1' * (32 - int(mask2))
+    #     # convert back
+    #     ip1 = '.'.join(str(int(ip_bits1[i:i+8], 2)) for i in range(0, 32, 8))
+    #     ip2 = '.'.join(str(int(ip_bits2[i:i+8], 2)) for i in range(0, 32, 8))
+    #     return abs(__ip_dec_unsafe(ip2) - __ip_dec_unsafe(ip1)) + 1
+    # else:
+    #     ip_bits1 = ''.join(f'{int(x, 16):016b}' for x in ip1.split(':'))
+    #     ip_bits2 = ''.join(f'{int(x, 16):016b}' for x in ip2.split(':'))
+    #     # crop ip_bits1 by mask and add zeros
+    #     ip_bits1 = ip_bits1[:int(mask1)] + '0' * (128 - int(mask1))
+    #     # crop ip_bits2 by mask and add ones
+    #     ip_bits2 = ip_bits2[:int(mask2)] + '1' * (128 - int(mask2))
+    #     # convert back
+    #     ip1 = ':'.join(hex(int(ip_bits1[i:i+16], 2))[2:] for i in range(0, 128, 16))
+    #     ip2 = ':'.join(hex(int(ip_bits2[i:i+16], 2))[2:] for i in range(0, 128, 16))
+    #     return abs(__ip_dec_unsafe(ip2) - __ip_dec_unsafe(ip1)) + 1
+    # left_network = ipaddress.IPv4Network(cidr_left)
+    # right_network = ipaddress.IPv4Network(cidr_right)
+    # left_network = left_network.network_address
+    # right_network = right_network.broadcast_address
+    # return abs(__ip_dec_unsafe(str(right_network)) - __ip_dec_unsafe(str(left_network))) + 1
+
+
+def cidr_clamp(cidr_left: str, cidr_right: str) -> str:
+    """_summary_ Clamp two CIDRs into singe one, result may include additional IPs
+
+    Args:
+        cidr_left (str): Left CIDR
+        cidr_right (str): Right CIDR
+
+    Returns:
+        str: Clamped CIDR
+    """
+    if ('.' in cidr_left and ':' in cidr_right) or \
+        (':' in cidr_left and '.' in cidr_right): 
+        Logger.warning('IP version mismatch')
+    left_network = ipaddress.IPv4Network(cidr_left)
+    right_network = ipaddress.IPv4Network(cidr_right)
+    if left_network > right_network:
+        left_network, right_network = right_network, left_network
+    cidr_left = left_network.exploded
+    cidr_right = right_network.exploded
+    # grab left netowrk and slap right mask on it
+    new_cidr = f'{left_network.network_address}/{right_network.prefixlen}'
+    # check if right network is in new_cidr
+    ip, mask = new_cidr.split('/')
+    ip_bits = ''.join(f'{int(x):08b}' for x in ip.split('.'))
+    real_ip_bits = ip_bits[:int(mask)] + '0' * (32 - int(mask))
+    # convert back to ip
+    new_cidr = '.'.join(str(int(real_ip_bits[i:i+8], 2)) for i in range(0, 32, 8))
+    new_cidr = f'{new_cidr}/{mask}'
+    
+    i = -1
+    while not ipaddress.IPv4Network(new_cidr).overlaps(right_network):
+        # if not, add +1 to the mask
+        new_cidr = f'{left_network.network_address}/{left_network.prefixlen + i}'
+        i -= 1
+        # set host bits to 0
+        # get bist as string
+        ip, mask = new_cidr.split('/')
+        ip_bits = ''.join(f'{int(x):08b}' for x in ip.split('.'))
+        real_ip_bits = ip_bits[:int(mask)] + '0' * (32 - int(mask))
+        # convert back to ip
+        new_cidr = '.'.join(str(int(real_ip_bits[i:i+8], 2)) for i in range(0, 32, 8))
+        new_cidr = f'{new_cidr}/{mask}'
+
+    Logger.debug(f'Clamped {cidr_left} and {cidr_right} into {new_cidr} (dist: {compute_cidr_dist(cidr_left, cidr_right)})')
+
+    return new_cidr
+
+    # if '.' in cidr:
+    #     if '/' not in cidr:
+    #         return False
+    #     ip, mask = cidr.split('/')
+    #     mask = int(mask) # how much bits can be non-zero, from start
+    #     ip = [int(x) for x in ip.split('.')]
+
+    #     if len(ip) != 4:
+    #         return False
+    #     # check if all bits after mask are zero
+    #     _str_ip = ''.join(f'{x:08b}' for x in ip)
+    #     # drop first mask bits
+    #     str_ip = _str_ip[mask:]
+    #     # check if there are any non-zero bits
+    #     for bit in str_ip:
+    #         if bit != '0':
+    #             return False
+
+def is_ip_in_cidr(ip: str, cidr: str) -> bool:
+    """_summary_ Check if IP is in CIDR
+
+    Args:
+        ip (str): IP to check
+        cidr (str): CIDR to check
+
+    Returns:
+        bool: Whether IP is in CIDR
+    """
+    ip = ip_full(ip)
+    cidr = cidr_full(cidr)
+    try:
+        ip = ipaddress.ip_address(ip)
+        cidr = ipaddress.ip_network(cidr, strict=False)
+        return ip in cidr
+    except ipaddress.AddressValueError:
+        Logger.warning(f'Invalid IP or CIDR: {ip} or {cidr}')
+        return False
+    
+
+def compute_cidr_dist_table(cidr_list: list):
+    """Compute distance table between CIDRs
+
+    Args:
+        cidr_list (list): List of CIDRs
+
+    Returns:
+        list: Distance table between CIDRs
+    """
+    n = len(cidr_list)
+    table = [[-1] * n for _ in range(n)]
+    
+    for i in range(n):
+        for j in range(i + 1, n):
+            dist = None
+            if i == j:
+                dist = -1
+            else:
+                dist = __compute_cidr_dist_unsafe(cidr_list[i], cidr_list[j])
+            table[i][j] = dist
+            table[j][i] = dist
+    return table
+
+
+def simplify_cidr_list(cidr_list: list, max_list_size: int) -> list:
+    """_summary_ Simplify CIDR list
+
+    Args:
+        cidr_list (list): List of CIDRs to simplify
+
+    Returns:
+        list: Simplified list of CIDRs
+    """
+    Logger.info('simplify_cidr_list: Starting')
+    current_list_size = len(cidr_list)
+    Logger.info(f'Simplifying CIDR list of size {current_list_size} to {max_list_size}')
+    while current_list_size > max_list_size:
+        Logger.info(f'Size: {current_list_size} -> {max_list_size}')
+        # TODO: tal can accept only ip, not full cidr.
+        # TODO: tal can accept ip in binary format, not str, that could 
+        #      speed up the process dramatically
+        tal = compute_cidr_dist_table(cidr_list)
+        min_dist = 1 << 32
+        min_i = -1
+        min_j = -1
+        for i in range(len(tal)):
+            for j in range(i + 1, len(tal)):
+                if tal[i][j] < min_dist:
+                    min_dist = tal[i][j]
+                    min_i = i
+                    min_j = j
+        new_cidr = cidr_clamp(cidr_list[min_i], cidr_list[min_j])
+        cidr_list[min_i] = new_cidr
+        cidr_list.pop(min_j)
+        current_list_size -= 1
+    Logger.info('simplify_cidr_list: Finished')
+    return cidr_list   
+
+def ip_to_cidr(ip: str) -> str:
+    """_summary_ Convert IP to CIDR
+
+    Args:
+        ip (str): IP to convert
+
+    Returns:
+        str: CIDR
+    """
+    if '/' in ip:
+        return ip
+    ip = ip_full(ip)
+    if '.' in ip:
+        ip = ip.split('.')
+        ip = [int(x) for x in ip]
+        mask = 32
+        for i in range(4):
+            if ip[i] == 0:
+                mask -= 8
+            else:
+                break
+        return f'{ip[0]}.{ip[1]}.{ip[2]}.{ip[3]}/{mask}'
+    elif ':' in ip:
+        ip = ip.split(':')
+        ip = [int(x, 16) for x in ip]
+        mask = 128
+        for i in range(8):
+            if ip[i] == 0:
+                mask -= 16
+            else:
+                break
+        return f'{ip[0]:x}:{ip[1]:x}:{ip[2]:x}:{ip[3]:x}:{ip[4]:x}:{ip[5]:x}:{ip[6]:x}:{ip[7]:x}/{mask}'
+    return ''
+
+
+def split_v4_v6(cidr_list: list) -> tuple:
+    """_summary_ Split CIDR list into IPv4 and IPv6
+
+    Args:
+        cidr_list (list): List of CIDRs
+
+    Returns:
+        tuple: Tuple of IPv4 and IPv6 CIDRs
+    """
+    v4 = []
+    v6 = []
+    for cidr in cidr_list:
+        if '.' in cidr:
+            v4.append(cidr)
+        elif ':' in cidr:
+            v6.append(cidr)
+    return v4, v6
+
+
+if __name__ == '__main__':
+    LOG_LEVEL = 5
+    LOG_DEBUG_COLOR = colorama.Fore.LIGHTCYAN_EX
+
+    Logger.debug('common.py: Testing')
+    Logger.debug(cidr_size('192.162.1.1/16'))
+    Logger.debug(cidr_size('192.162.1.1/24'))
+    Logger.debug(ip_full('192.162.1.1'))
+    Logger.debug('ip_full: ' + ip_full('fc02::8f8a:bfab:eb50:5031'))
+    Logger.debug('ip_short: ' + ip_short(ip_full('fc02::8f8a:bfab:eb50:5031')))
+    Logger.debug('cidr_full: ' + cidr_full('fc02::8f8a:bfab:eb50:5031/7'))
+    Logger.debug('cidr_short: ' + cidr_short(cidr_full('fc02::8f8a:bfab:eb50:5031/7')))
+    Logger.debug('ip_dec: ' + str(ip_dec('192.162.1.1'))) # 3231842561
+    Logger.debug('ip_dec: ' + str(ip_dec('fc02::8f8a:bfab:eb50:5031'))) # 334975839531515869637359730422623260721
+    Logger.debug(cidr_size('192.162.1.1/30'))
+    Logger.debug(cidr_range('192.162.1.1/30'))
+    Logger.debug(cidr_size('fc02::8f8a:bfab:eb50:5031/11'))
+    Logger.debug(cidr_range('fc02::8f8a:bfab:eb50:5031/11'))
+    Logger.debug(compute_cidr_dist('216.58.192.0/20', '216.58.208.0/21'))
+    # Logger.debug(dec_ip('fc02::8f8a:bfab:eb50:5031'))
+    # test is_cidr_valid
+    Logger.debug(cidr_size('216.58.192.0/20'))
+    Logger.debug(cidr_size('216.58.208.0/21'))
+    range_l = cidr_range('216.58.192.0/20').split(' - ')
+    range_r = cidr_range('216.58.208.0/21').split(' - ')
+    Logger.debug(range_l)
+    Logger.debug(range_r)
+    new_range = cidr_range(cidr_clamp('216.58.192.0/20', '216.58.208.0/21')).split(' - ')
+    Logger.debug(cidr_clamp('216.58.192.0/20', '216.58.208.0/21'))
+    Logger.debug(new_range)
+    Logger.debug(cidr_size(cidr_clamp('216.58.192.0/20', '216.58.208.0/21')))
+    ll = ['216.58.192.0/20', '216.58.208.0/21', '216.58.217.0/24', '216.58.220.0/22', '220.181.174.0/24', '23.101.24.0/24', '23.202.231.0/24', '23.217.138.0/24', '23.225.141.0/24', '23.234.30.0/24', '23.236.48.0/20', '23.251.128.0/19', '31.13.106.0/24', '31.13.112.0/24', '31.13.64.0/24', '31.13.67.0/24', '31.13.68.0/22', '31.13.73.0/24', '31.13.75.0/24', '31.13.76.0/24', '31.13.80.0/21']
+    ll = [x for x in ll if is_cidr_valid(x)]
+    Logger.debug((len(ll), ll))
+    ll = simplify_cidr_list(ll, 4)
+    Logger.debug((len(ll), ll))
